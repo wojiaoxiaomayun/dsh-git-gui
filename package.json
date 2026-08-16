@@ -1,0 +1,43 @@
+{
+  "name": "@dsh/git-gui",
+  "version": "0.1.0",
+  "description": "Git GUI panel for the DeepSeek Harness web surface: visualize working-tree changes (including every modification the agent makes), stage/commit/branch/merge/log/pull/push/stash/revert — all from the browser.",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": {
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "default": "./lib/client.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib/index.js",
+    "lib/service.js",
+    "lib/runner.js",
+    "lib/parse.js",
+    "lib/activity.js",
+    "lib/client.js",
+    "package.json",
+    "README.md",
+    "cordis.patch.example.yml"
+  ],
+  "dsh": {
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-connection",
+        "@deepseek-ai/dsh-client-runtime",
+        "@deepseek-ai/dsh-client-ui-sidebar"
+      ]
+    }
+  },
+  "scripts": {
+    "build:client": "node scripts/build-client.mjs",
+    "watch:client": "node scripts/build-client.mjs --watch",
+    "test": "node --test tests/"
+  },
+  "license": "MIT"
+}
