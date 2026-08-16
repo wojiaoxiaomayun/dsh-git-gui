@@ -6,14 +6,14 @@
 </p>
 
 <p align="center">
-  <img alt="Version 0.1.1" src="https://img.shields.io/badge/version-0.1.1-blue">
+  <img alt="Version 0.1.2" src="https://img.shields.io/badge/version-0.1.2-blue">
   <img alt="DeepSeek Harness rc.6" src="https://img.shields.io/badge/dsh-0.1.0--rc.6-skyblue">
   <img alt="MIT License" src="https://img.shields.io/badge/license-MIT-green">
 </p>
 
 A **Git graphical interface plugin** for the DeepSeek Harness Web UI: view, stage, commit, and revert project changes directly in the browser, while seeing every modification the Agent (harness) makes to workspace files in real time.
 
-> **Current version: v0.1.1** — Visual operations for viewing changes, committing/reverting, remote synchronization, and more are now available. Branch management, stash, and the AI modification timeline are planned to be completed and released in v0.2.0. See the [Roadmap](#roadmap) below for details.
+> **Current version: v0.1.2** — Visual operations for viewing changes, committing/reverting, remote synchronization, and more are now available. Branch management, stash, and the AI modification timeline are planned to be completed and released in v0.2.0. See the [Roadmap](#roadmap) below for details.
 
 ## Features
 

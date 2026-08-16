@@ -1,10 +1,13 @@
 #!/usr/bin/env node
 /**
- * postinstall 钩子:自动把本包的 Loader 行写入 profile 的
+ * 独立配置工具(由 scripts/install.ps1 调用):把本包的 Loader 行写入 profile 的
  * cordis.patch.yml —— 幂等(只追加、绝不改写已有内容)。
  *
+ * 本包是 bundle 型插件,官方安装路径(dsh plugin add)由对账自动注册、无需本工具;
+ * 它只服务"npm --prefix 直接安装"这一兜底路径。
+ *
  * 定位 profile 的顺序:
- *   1. 显式参数 `node scripts/auto-patch.mjs <profileDir>`(测试用);
+ *   1. 显式参数 `node scripts/auto-patch.mjs <profileDir>`;
  *   2. 从安装路径反推:`…/profiles/<name>/node_modules/<scope>/<pkg>`;
  *   3. $DSH_HOME(或 ~/.dsh)+ $DSH_GIT_GUI_PROFILE(默认 web)——并校验包确实装在那里。
  *
