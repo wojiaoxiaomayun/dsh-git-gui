@@ -25,6 +25,7 @@
     "lib/activity.js",
     "lib/client.js",
     "scripts/build-client.mjs",
+    "scripts/auto-patch.mjs",
     "scripts/install.ps1",
     "package.json",
     "README.md",
@@ -45,7 +46,8 @@
     "watch:client": "node scripts/build-client.mjs --watch",
     "test": "node --test tests/",
     "prepare": "node scripts/build-client.mjs",
-    "prepack": "node scripts/build-client.mjs"
+    "prepack": "node scripts/build-client.mjs",
+    "postinstall": "node scripts/auto-patch.mjs"
   },
   "license": "MIT"
 }

@@ -11,38 +11,46 @@ DeepSeek Harness Web UI 的 **Git 图形界面插件**:在浏览器里直接查�
 - **日志视图**:提交历史(哈希 / 引用徽标 / 作者 / 相对时间),支持逐提交 `revert` 撤销;
 - **嵌套仓库发现**:会话工作区本身不是 git 仓库时,自动在子目录中查找唯一的嵌套仓库并以其为操作根(例如仓库位于工作区的 `dsh-git-gui/` 子目录);多个嵌套仓库时明确提示而不猜选;
 
-## 安装
+## QuickStart(一行安装)
+
+```powershell
+npm install --prefix "$env:DSH_HOME\profiles\web" github:lovetree128/dsh-git-gui
+```
+
+安装完成后 **重启 `dsh web`** 即可(包的 postinstall 钩子会自动构建 client bundle、并把插件行写入 `cordis.patch.yml`,无需任何手动配置)。已发布到 npm 后同样一行:
+
+```powershell
+npm install --prefix "$env:DSH_HOME\profiles\web" @dsh/git-gui
+```
+
+## 安装(详细)
 
 ### 方式一:npm 自动安装(推荐)
 
-一键脚本(自动完成:安装包 → 写入 `cordis.patch.yml` 插件行 → 清理旧的 junction 安装):
+- **postinstall 钩子**自动完成:`prepare` 构建 `lib/client.js` → `auto-patch.mjs` 把 Loader 行追加进 profile 的 `cordis.patch.yml`(幂等,只追加不改写;`DSH_GIT_GUI_SKIP=1` 可跳过);
+- 等价手动命令(用于不想自动写配置的场景):
 
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts/install.ps1
-```
+  ```powershell
+  npm install --prefix "$env:DSH_HOME\profiles\web" github:lovetree128/dsh-git-gui   # GitHub 安装
+  npm install --prefix "$env:DSH_HOME\profiles\web" @dsh/git-gui                    # npm 源(发布后)
+  dsh plugin --profile web add github:lovetree128/dsh-git-gui                       # 官方命令(内部用 pnpm)
+  ```
 
-等价的手动命令:
+- 若关闭了自动写配置,需手动在 `$env:DSH_HOME\profiles\web\cordis.patch.yml` 追加(模板见 `cordis.patch.example.yml`):
 
-```powershell
-# 从 GitHub 安装(默认;clone 时 npm 会自动执行 prepare 构建 client bundle)
-npm install --prefix "$env:DSH_HOME\profiles\web" github:lovetree128/dsh-git-gui
+  ```yaml
+  - insert:
+      - id: git-gui
+        name: '@dsh/git-gui'
+  ```
 
-# 或从 npm registry 安装(发布后)
-npm install --prefix "$env:DSH_HOME\profiles\web" @dsh/git-gui
+- 一键迁移脚本(装包 + 写配置 + 清理旧 junction 一步到位):
 
-# 或走官方 dsh plugin 命令(内部使用 pnpm,需先 npm install -g pnpm)
-dsh plugin --profile web add github:lovetree128/dsh-git-gui
-```
+  ```powershell
+  powershell -ExecutionPolicy Bypass -File scripts/install.ps1
+  ```
 
-安装后在 `$env:DSH_HOME\profiles\web\cordis.patch.yml` 追加插件行(模板见 `cordis.patch.example.yml`):
-
-```yaml
-- insert:
-    - id: git-gui
-      name: '@dsh/git-gui'
-```
-
-最后重启 `dsh web`。卸载:`npm uninstall --prefix "$env:DSH_HOME\profiles\web" @dsh/git-gui`,并删除补丁行。
+- 最后重启 `dsh web`。卸载:`npm uninstall --prefix "$env:DSH_HOME\profiles\web" @dsh/git-gui`,并删除补丁行。
 
 ### 方式二:手动 junction(离线/开发环境)
 
