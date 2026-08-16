@@ -1,0 +1,58 @@
+{
+  "name": "@amorligno/dsh-git-gui",
+  "version": "0.1.1",
+  "description": "Git GUI panel for the DeepSeek Harness web surface: visualize working-tree changes (including every modification the agent makes), stage/commit/branch/merge/log/pull/push/stash/revert — all from the browser.",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": {
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "default": "./lib/client.js"
+    },
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lovetree128/dsh-git-gui.git"
+  },
+  "files": [
+    "lib/index.js",
+    "lib/service.js",
+    "lib/runner.js",
+    "lib/parse.js",
+    "lib/activity.js",
+    "lib/client.js",
+    "scripts/build-client.mjs",
+    "scripts/auto-patch.mjs",
+    "scripts/install.ps1",
+    "package.json",
+    "README.md",
+    "cordis.patch.yml",
+    "cordis.patch.example.yml"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-connection",
+        "@deepseek-ai/dsh-client-runtime",
+        "@deepseek-ai/dsh-client-ui-sidebar"
+      ]
+    }
+  },
+  "scripts": {
+    "build:client": "node scripts/build-client.mjs",
+    "watch:client": "node scripts/build-client.mjs --watch",
+    "test": "node --test tests/",
+    "prepare": "node scripts/build-client.mjs",
+    "prepack": "node scripts/build-client.mjs",
+    "postinstall": "node scripts/auto-patch.mjs"
+  },
+  "license": "MIT"
+}
