@@ -34,15 +34,15 @@ dsh plugin --profile web add @amorligno/dsh-git-gui
 安装后请重启`dsh web`并刷新浏览器页面
 ## 更新
 ```powershell
-dsh plugin --profile web update github:lovetree128/dsh-git-gui
+dsh plugin --profile web update @amorligno/dsh-git-gui
 ```
 ## 卸载
 ```powershell
-dsh plugin --profile web remove github:lovetree128/dsh-git-gui
+dsh plugin --profile web remove @amorligno/dsh-git-gui
 ```
 ## 使用
 
-插件安装后打开DeepSeek Harness Web UI， 点击左下角新增按钮呼出侧边栏。
+插件安装后打开DeepSeek Harness Web UI， 点击左下角新增按钮呼出侧边栏，然后享受版本控制吧。
 
 ## 架构
 
