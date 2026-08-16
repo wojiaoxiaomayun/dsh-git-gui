@@ -11,60 +11,9 @@ DeepSeek Harness Web UI 的 **Git 图形界面插件**:在浏览器里直接查�
 - **日志视图**:提交历史(哈希 / 引用徽标 / 作者 / 相对时间),支持逐提交 `revert` 撤销;
 - **嵌套仓库发现**:会话工作区本身不是 git 仓库时,自动在子目录中查找唯一的嵌套仓库并以其为操作根(例如仓库位于工作区的 `dsh-git-gui/` 子目录);多个嵌套仓库时明确提示而不猜选;
 
-## QuickStart(一行安装)
+## 安装
 
-```powershell
-npm install --prefix "$env:DSH_HOME\profiles\web" github:lovetree128/dsh-git-gui
-```
-
-安装完成后 **重启 `dsh web`** 即可(包的 postinstall 钩子会自动构建 client bundle、并把插件行写入 `cordis.patch.yml`,无需任何手动配置)。已发布到 npm 后同样一行:
-
-```powershell
-npm install --prefix "$env:DSH_HOME\profiles\web" @dsh/git-gui
-```
-
-## 安装(详细)
-
-### 方式一:npm 自动安装(推荐)
-
-- **postinstall 钩子**自动完成:`prepare` 构建 `lib/client.js` → `auto-patch.mjs` 把 Loader 行追加进 profile 的 `cordis.patch.yml`(幂等,只追加不改写;`DSH_GIT_GUI_SKIP=1` 可跳过);
-- 等价手动命令(用于不想自动写配置的场景):
-
-  ```powershell
-  npm install --prefix "$env:DSH_HOME\profiles\web" github:lovetree128/dsh-git-gui   # GitHub 安装
-  npm install --prefix "$env:DSH_HOME\profiles\web" @dsh/git-gui                    # npm 源(发布后)
-  dsh plugin --profile web add github:lovetree128/dsh-git-gui                       # 官方命令(内部用 pnpm)
-  ```
-
-- 若关闭了自动写配置,需手动在 `$env:DSH_HOME\profiles\web\cordis.patch.yml` 追加(模板见 `cordis.patch.example.yml`):
-
-  ```yaml
-  - insert:
-      - id: git-gui
-        name: '@dsh/git-gui'
-  ```
-
-- 一键迁移脚本(装包 + 写配置 + 清理旧 junction 一步到位):
-
-  ```powershell
-  powershell -ExecutionPolicy Bypass -File scripts/install.ps1
-  ```
-
-- 最后重启 `dsh web`。卸载:`npm uninstall --prefix "$env:DSH_HOME\profiles\web" @dsh/git-gui`,并删除补丁行。
-
-### 方式二:手动 junction(离线/开发环境)
-
-1. 把本包链接进 web profile(Windows 用目录 junction):
-
-   ```powershell
-   New-Item -ItemType Junction `
-     -Path "$env:DSH_HOME\profiles\web\node_modules\@dsh\git-gui" `
-     -Target "<本仓库路径>"
-   ```
-
-2. 在 `$env:DSH_HOME\profiles\web\cordis.patch.yml` 追加插件行(同上);
-
-3. 重启 `dsh web` 使 host 行与客户端图生效。侧栏底部出现 **Git** 按钮,点击打开浮动面板。
+(待补充)
 
 ## 使用
 

@@ -35,23 +35,30 @@ if ($UseDshPlugin) {
   if ($LASTEXITCODE -ne 0) { throw "npm install 失败(可尝试 -UseDshPlugin,或检查网络/git 环境)" }
 }
 
-Write-Host "== 2/3 检查 cordis.patch.yml 插件行"
-$patchFile = Join-Path $profileDir "cordis.patch.yml"
-if (-not (Test-Path $patchFile)) {
-  throw "缺少 cordis.patch.yml: $patchFile"
+Write-Host "== 2/3 检查 cordis.patch.yml 插件行(auto-patch)"
+$autoPatch = Join-Path $PSScriptRoot "auto-patch.mjs"
+if (-not (Test-Path $autoPatch)) {
+  throw "缺少 $autoPatch"
 }
-$text = Get-Content $patchFile -Raw
-if ($text -notmatch "@dsh/git-gui") {
-  Add-Content -Path $patchFile -Encoding UTF8 -Value @"
+node $autoPatch $profileDir
+if ($LASTEXITCODE -ne 0) { throw "auto-patch 执行失败" }
 
-# dsh-git-gui 插件(由 @dsh/git-gui 的 install.ps1 追加)
-- insert:
-    - id: git-gui
-      name: '@dsh/git-gui'
-"@
-  Write-Host "  已追加插件行"
-} else {
-  Write-Host "  插件行已存在,跳过"
+# 经 dsh plugin 安装时,bundle 补丁层自动注册插件;此时应清掉 cordis.patch.yml 里的旧行,避免双注册
+if ($UseDshPlugin) {
+  $manifestFile = Join-Path $profileDir "package.json"
+  if (Test-Path $manifestFile) {
+    $manifest = Get-Content $manifestFile -Raw | ConvertFrom-Json
+    $bundles = @($manifest.dsh.profile.bundles)
+    if ($bundles -contains "@dsh/git-gui") {
+      $patchText = Get-Content (Join-Path $profileDir "cordis.patch.yml") -Raw
+      $rowPattern = "(?m)^- insert:\s*\r?\n\s*- id: git-gui\s*\r?\n\s*name: '@dsh/git-gui'\s*\r?\n?"
+      $cleaned = [regex]::Replace($patchText, $rowPattern, "")
+      if ($cleaned -ne $patchText) {
+        Set-Content -Path (Join-Path $profileDir "cordis.patch.yml") -Value $cleaned -Encoding UTF8
+        Write-Host "  已从 cordis.patch.yml 移除 git-gui 行(bundle 补丁层已接管注册)"
+      }
+    }
+  }
 }
 
 Write-Host "== 3/3 清理旧的 junction 手工安装"

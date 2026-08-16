@@ -11,6 +11,7 @@
     "./client": {
       "default": "./lib/client.js"
     },
+    "./cordis.patch.yml": "./cordis.patch.yml",
     "./package.json": "./package.json"
   },
   "repository": {
@@ -29,9 +30,13 @@
     "scripts/install.ps1",
     "package.json",
     "README.md",
+    "cordis.patch.yml",
     "cordis.patch.example.yml"
   ],
   "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
     "client": {
       "platform": "web",
       "inject": [

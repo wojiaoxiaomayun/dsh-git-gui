@@ -53,8 +53,29 @@ if (process.argv[2] === undefined && !fs.existsSync(installed)) {
   process.exit(0)
 }
 
+// 经 `dsh plugin add` 安装时,本包会被对账进 dsh.profile.bundles,bundle 补丁层
+// (cordis.patch.yml)在启动时自动生效 —— 无需再往 cordis.patch.yml 写行。
+function bundlesIncludePackage() {
+  try {
+    const manifest = JSON.parse(fs.readFileSync(path.join(profileDir, 'package.json'), 'utf8'))
+    const bundles = manifest?.dsh?.profile?.bundles
+    return Array.isArray(bundles) && bundles.includes('@dsh/git-gui')
+  } catch {
+    return false
+  }
+}
+
 let text = fs.readFileSync(patchFile, 'utf8')
-if (text.includes('@dsh/git-gui')) {
+const rowPresent = text.includes('@dsh/git-gui')
+if (bundlesIncludePackage()) {
+  if (rowPresent) {
+    console.log('[dsh-git-gui] 检测到 dsh.profile.bundles 与 cordis.patch.yml 同时注册本包,为避免重复注册,请手动删除 cordis.patch.yml 中的 git-gui 行')
+  } else {
+    console.log('[dsh-git-gui] profile 的 dsh.profile.bundles 已包含本包(bundle 补丁层自动生效),跳过写行')
+  }
+  process.exit(0)
+}
+if (rowPresent) {
   console.log('[dsh-git-gui] cordis.patch.yml 已包含插件行,无需修改')
   process.exit(0)
 }

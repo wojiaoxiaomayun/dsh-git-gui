@@ -1,0 +1,10 @@
+# @dsh/git-gui bundle 补丁层。
+#
+# 当本包出现在 profile 的 dsh.profile.bundles 中时(经
+# `dsh plugin --profile <name> add @dsh/git-gui` 由 pnpm 安装后自动对账加入),
+# dsh 启动时会把本补丁叠到配置树上,下面的 insert 行即注册该插件。
+# 未走 dsh plugin 安装(例如 npm --prefix 直接装)时,本层不会被应用,此时由
+# postinstall 钩子把同一行写入 profile 的 cordis.patch.yml 兜底。
+- insert:
+    - id: git-gui
+      name: '@dsh/git-gui'

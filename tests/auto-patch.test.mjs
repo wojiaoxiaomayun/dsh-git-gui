@@ -54,3 +54,39 @@ test('auto-patch honors DSH_GIT_GUI_SKIP', () => {
   assert.equal(fs.readFileSync(patchFile, 'utf8'), '[]\n')
   fs.rmSync(home, { recursive: true, force: true })
 })
+
+test('auto-patch skips writing the row when dsh.profile.bundles already registers the package', () => {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'dsh-autopatch-'))
+  const profileDir = path.join(home, 'profiles', 'web')
+  fs.mkdirSync(profileDir, { recursive: true })
+  const patchFile = path.join(profileDir, 'cordis.patch.yml')
+  fs.writeFileSync(patchFile, '[]\n', 'utf8')
+  fs.writeFileSync(path.join(profileDir, 'package.json'), JSON.stringify({
+    name: 'web-profile',
+    dsh: { profile: { bundles: ['@deepseek-ai/dsh-base', '@deepseek-ai/dsh-web-app', '@dsh/git-gui'] } },
+  }), 'utf8')
+
+  const result = run(profileDir)
+  assert.equal(result.status, 0)
+  assert.equal(fs.readFileSync(patchFile, 'utf8'), '[]\n', 'bundle install must not duplicate the row')
+  assert.match(result.stdout, /bundles/)
+  fs.rmSync(home, { recursive: true, force: true })
+})
+
+test('auto-patch warns (without touching files) when bundle AND row are both present', () => {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'dsh-autopatch-'))
+  const profileDir = path.join(home, 'profiles', 'web')
+  fs.mkdirSync(profileDir, { recursive: true })
+  const patchFile = path.join(profileDir, 'cordis.patch.yml')
+  fs.writeFileSync(patchFile, "- insert:\n    - id: git-gui\n      name: '@dsh/git-gui'\n", 'utf8')
+  fs.writeFileSync(path.join(profileDir, 'package.json'), JSON.stringify({
+    name: 'web-profile',
+    dsh: { profile: { bundles: ['@dsh/git-gui'] } },
+  }), 'utf8')
+
+  const result = run(profileDir)
+  assert.equal(result.status, 0)
+  assert.match(result.stdout, /重复注册|删除 cordis\.patch\.yml/)
+  assert.equal(fs.readFileSync(patchFile, 'utf8'), "- insert:\n    - id: git-gui\n      name: '@dsh/git-gui'\n")
+  fs.rmSync(home, { recursive: true, force: true })
+})
