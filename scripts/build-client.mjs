@@ -1,12 +1,14 @@
 /**
- * Micro-bundler for the @dsh/git-gui client half (zero dependencies).
+ * Micro-bundler for the dsh-git-gui client half (zero dependencies).
  *
  * DSH's browser module system loads exactly one classic script per plugin
  * (`/plugins/<id>/client.js`) that must call
  * `window.__ModuleLoader__.load({ id, factory })` with a CommonJS factory.
- * Relative requires resolve inside our own registry; bare specifiers
- * (`react`, `react/jsx-runtime`, `@deepseek-ai/...`) are handed to the
- * runtime `require` provided by the module table.
+ * The module id MUST equal the npm package name (it is read from
+ * package.json), and a synthetic `./pkg-id.js` module exposes that name to
+ * client code. Relative requires resolve inside our own registry; bare
+ * specifiers (`react`, `react/jsx-runtime`, `@deepseek-ai/...`) are handed
+ * to the runtime `require` provided by the module table.
  *
  * Usage: node scripts/build-client.mjs [--watch]
  */
@@ -17,7 +19,7 @@ import { fileURLToPath } from 'node:url'
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const SRC = path.join(ROOT, 'client-src')
 const OUT = path.join(ROOT, 'lib', 'client.js')
-const ID = '@dsh/git-gui'
+const ID = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')).name
 
 function collectModules(dir, prefix = '.') {
   const modules = new Map()
@@ -34,6 +36,8 @@ function collectModules(dir, prefix = '.') {
 
 function build() {
   const modules = collectModules(SRC)
+  // synthetic module: the npm package name, available to client code
+  modules.set('./pkg-id.js', `module.exports = ${JSON.stringify(ID)}\n`)
   const body = []
   for (const [id, source] of modules) {
     body.push(`${JSON.stringify(id)}: function (module, exports, require) {\n${source}\n}`)
@@ -68,7 +72,7 @@ function build() {
     + `      var mod = { exports: {} };\n`
     + `      __cache[resolved] = mod;\n`
     + `      var factory = __modules[resolved];\n`
-    + `      if (factory === undefined) throw new Error('@dsh/git-gui: unknown module ' + resolved);\n`
+    + `      if (factory === undefined) throw new Error(${JSON.stringify(ID)} + ': unknown module ' + resolved);\n`
     + `      factory(mod, mod.exports, function (spec) { return __load(spec, resolved); });\n`
     + `      return mod.exports;\n`
     + `    }\n`

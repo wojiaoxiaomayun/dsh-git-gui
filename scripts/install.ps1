@@ -2,7 +2,7 @@
 #
 # 用法:
 #   powershell -ExecutionPolicy Bypass -File scripts/install.ps1
-#   powershell -File scripts/install.ps1 -Spec "@dsh/git-gui"        # 从 npm registry 安装(需已发布)
+#   powershell -File scripts/install.ps1 -Spec "@amorligno/dsh-git-gui"   # 从 npm registry 安装(需已发布)
 #   powershell -File scripts/install.ps1 -Spec "github:lovetree128/dsh-git-gui"   # 从 GitHub 安装(默认)
 #   powershell -File scripts/install.ps1 -UseDshPlugin               # 走官方 dsh plugin 命令(内部用 pnpm)
 #
@@ -16,6 +16,10 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+
+# 包名从 package.json 动态读取,与 npm 发布名保持一致
+$pkgManifest = Get-Content (Join-Path $PSScriptRoot "..\package.json") -Raw | ConvertFrom-Json
+$pkgName = $pkgManifest.name
 
 $dshHome = if ($env:DSH_HOME) { $env:DSH_HOME } else { Join-Path $HOME ".dsh" }
 $profileDir = Join-Path $dshHome "profiles\$Profile"
@@ -49,9 +53,9 @@ if ($UseDshPlugin) {
   if (Test-Path $manifestFile) {
     $manifest = Get-Content $manifestFile -Raw | ConvertFrom-Json
     $bundles = @($manifest.dsh.profile.bundles)
-    if ($bundles -contains "@dsh/git-gui") {
+    if ($bundles -contains $pkgName) {
       $patchText = Get-Content (Join-Path $profileDir "cordis.patch.yml") -Raw
-      $rowPattern = "(?m)^- insert:\s*\r?\n\s*- id: git-gui\s*\r?\n\s*name: '@dsh/git-gui'\s*\r?\n?"
+      $rowPattern = "(?m)^- insert:\s*\r?\n\s*- id: git-gui\s*\r?\n\s*name: '$([regex]::Escape($pkgName))'\s*\r?\n?"
       $cleaned = [regex]::Replace($patchText, $rowPattern, "")
       if ($cleaned -ne $patchText) {
         Set-Content -Path (Join-Path $profileDir "cordis.patch.yml") -Value $cleaned -Encoding UTF8
@@ -75,4 +79,4 @@ Write-Host ""
 Write-Host "✅ 安装完成。请重启 dsh web(host 行在启动时扫描),"
 Write-Host "   之后侧栏底部会出现 Git 按钮;面板自动跟随当前会话的工作区。"
 Write-Host ""
-Write-Host "卸载: npm uninstall --prefix `"$profileDir`" @dsh/git-gui 并删除 cordis.patch.yml 中的 git-gui 行"
+Write-Host "卸载: npm uninstall --prefix `"$profileDir`" $pkgName 并删除 cordis.patch.yml 中的 git-gui 行"

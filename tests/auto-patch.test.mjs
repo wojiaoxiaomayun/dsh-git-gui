@@ -6,7 +6,10 @@ import path from 'node:path'
 import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 
-const script = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../scripts/auto-patch.mjs')
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
+const script = path.join(root, 'scripts', 'auto-patch.mjs')
+const PKG_NAME = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8')).name
+const PKG_ESCAPED = PKG_NAME.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 function run(profileDir, env = {}) {
   return spawnSync(process.execPath, [script, profileDir], { env: { ...process.env, ...env }, encoding: 'utf8' })
@@ -23,13 +26,13 @@ test('auto-patch appends the loader row once (idempotent)', () => {
   assert.equal(first.status, 0)
   let text = fs.readFileSync(patchFile, 'utf8')
   assert.match(text, /id: git-gui/)
-  assert.match(text, /name: '@dsh\/git-gui'/)
-  const occurrences = (text.match(/@dsh\/git-gui/g) ?? []).length
+  assert.match(text, new RegExp(`name: '${PKG_ESCAPED}'`))
+  const occurrences = (text.match(new RegExp(PKG_ESCAPED, 'g')) ?? []).length
 
   const second = run(profileDir)
   assert.equal(second.status, 0)
   text = fs.readFileSync(patchFile, 'utf8')
-  assert.equal((text.match(/@dsh\/git-gui/g) ?? []).length, occurrences, 'must not append twice')
+  assert.equal((text.match(new RegExp(PKG_ESCAPED, 'g')) ?? []).length, occurrences, 'must not append twice')
 
   fs.rmSync(home, { recursive: true, force: true })
 })
@@ -63,7 +66,7 @@ test('auto-patch skips writing the row when dsh.profile.bundles already register
   fs.writeFileSync(patchFile, '[]\n', 'utf8')
   fs.writeFileSync(path.join(profileDir, 'package.json'), JSON.stringify({
     name: 'web-profile',
-    dsh: { profile: { bundles: ['@deepseek-ai/dsh-base', '@deepseek-ai/dsh-web-app', '@dsh/git-gui'] } },
+    dsh: { profile: { bundles: ['@deepseek-ai/dsh-base', '@deepseek-ai/dsh-web-app', PKG_NAME] } },
   }), 'utf8')
 
   const result = run(profileDir)
@@ -78,15 +81,15 @@ test('auto-patch warns (without touching files) when bundle AND row are both pre
   const profileDir = path.join(home, 'profiles', 'web')
   fs.mkdirSync(profileDir, { recursive: true })
   const patchFile = path.join(profileDir, 'cordis.patch.yml')
-  fs.writeFileSync(patchFile, "- insert:\n    - id: git-gui\n      name: '@dsh/git-gui'\n", 'utf8')
+  fs.writeFileSync(patchFile, `- insert:\n    - id: git-gui\n      name: '${PKG_NAME}'\n`, 'utf8')
   fs.writeFileSync(path.join(profileDir, 'package.json'), JSON.stringify({
     name: 'web-profile',
-    dsh: { profile: { bundles: ['@dsh/git-gui'] } },
+    dsh: { profile: { bundles: [PKG_NAME] } },
   }), 'utf8')
 
   const result = run(profileDir)
   assert.equal(result.status, 0)
   assert.match(result.stdout, /重复注册|删除 cordis\.patch\.yml/)
-  assert.equal(fs.readFileSync(patchFile, 'utf8'), "- insert:\n    - id: git-gui\n      name: '@dsh/git-gui'\n")
+  assert.equal(fs.readFileSync(patchFile, 'utf8'), `- insert:\n    - id: git-gui\n      name: '${PKG_NAME}'\n`)
   fs.rmSync(home, { recursive: true, force: true })
 })

@@ -1,9 +1,10 @@
 /**
- * Browser half of @dsh/git-gui — the plugin body exported to the web shell.
+ * Browser half of dsh-git-gui — the plugin body exported to the web shell.
  *
  * The micro-bundler wraps the whole client-src tree into the
  * `window.__ModuleLoader__.load({ id, factory })` CJS shape; the shell
  * materializes this module and treats its exports as a cordis object plugin.
+ * `./pkg-id` is a synthetic module the bundler generates from package.json.
  */
 
 const { startController } = require('./control')
@@ -11,6 +12,7 @@ const { makeGitApi } = require('./api')
 const { FooterButton } = require('./v-footer')
 const { GitPanel } = require('./v-panel')
 const { css } = require('./styles')
+const PKG_ID = require('./pkg-id')
 
 const inject = ['connection', 'slots']
 
@@ -18,10 +20,10 @@ function apply(ctx) {
   // plugin-owned stylesheet; the module loader inventories this tag id so the
   // HMR driver can remove it together with the plugin.
   if (typeof document !== 'undefined') {
-    const tagId = '@dsh/git-gui/styles.css'
+    const tagId = `${PKG_ID}/styles.css`
     if (document.querySelector(`style[data-plugin-css="${tagId}"]`) === null) {
       const tag = document.createElement('style')
-      tag.dataset.plugin = '@dsh/git-gui'
+      tag.dataset.plugin = PKG_ID
       tag.dataset.pluginCss = tagId
       tag.textContent = css
       document.head.appendChild(tag)

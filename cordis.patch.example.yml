@@ -1,5 +1,6 @@
-# 追加到 $DSH_HOME/profiles/web/cordis.patch.yml(用户补丁层)
+# 手动安装时追加到 $DSH_HOME/profiles/web/cordis.patch.yml(用户补丁层)
 # 每行 id 用于后续覆盖/禁用;host 行与客户端图在 dsh web 重启后生效。
+# 注意:bundle 安装(dsh plugin add)不需要这一行 —— 补丁层会自动注册。
 - insert:
     - id: git-gui
-      name: '@dsh/git-gui'
+      name: '@amorligno/dsh-git-gui'

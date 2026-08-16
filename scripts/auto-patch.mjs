@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /**
- * postinstall 钩子:自动把 @dsh/git-gui 的 Loader 行写入 profile 的
+ * postinstall 钩子:自动把本包的 Loader 行写入 profile 的
  * cordis.patch.yml —— 幂等(只追加、绝不改写已有内容)。
  *
  * 定位 profile 的顺序:
  *   1. 显式参数 `node scripts/auto-patch.mjs <profileDir>`(测试用);
- *   2. 从安装路径反推:`…/profiles/<name>/node_modules/@dsh/git-gui`;
+ *   2. 从安装路径反推:`…/profiles/<name>/node_modules/<scope>/<pkg>`;
  *   3. $DSH_HOME(或 ~/.dsh)+ $DSH_GIT_GUI_PROFILE(默认 web)——并校验包确实装在那里。
  *
  * 环境变量 DSH_GIT_GUI_SKIP=1 可跳过自动写入。
@@ -13,14 +13,18 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import os from 'node:os'
+import { fileURLToPath } from 'node:url'
 
 if (process.env.DSH_GIT_GUI_SKIP === '1') process.exit(0)
 
+const PKG_NAME = JSON.parse(
+  fs.readFileSync(path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'package.json'), 'utf8'),
+).name
 const ROW = [
-  '# dsh-git-gui 插件(@dsh/git-gui postinstall 自动追加)',
+  `# dsh-git-gui 插件(${PKG_NAME} postinstall 自动追加)`,
   '- insert:',
-  "    - id: git-gui",
-  "      name: '@dsh/git-gui'",
+  '    - id: git-gui',
+  `      name: '${PKG_NAME}'`,
   '',
 ].join('\n')
 
@@ -47,7 +51,7 @@ if (!fs.existsSync(patchFile)) {
 }
 
 // 兜底路径下,确认包真的装在这个 profile 里,避免把无效行写进配置导致 dsh 启动失败
-const installed = path.join(profileDir, 'node_modules', '@dsh', 'git-gui')
+const installed = path.join(profileDir, 'node_modules', ...PKG_NAME.split('/'))
 if (process.argv[2] === undefined && !fs.existsSync(installed)) {
   console.log(`[dsh-git-gui] 包未安装在 ${profileDir} 的 node_modules 中,跳过自动写入`)
   process.exit(0)
@@ -59,14 +63,14 @@ function bundlesIncludePackage() {
   try {
     const manifest = JSON.parse(fs.readFileSync(path.join(profileDir, 'package.json'), 'utf8'))
     const bundles = manifest?.dsh?.profile?.bundles
-    return Array.isArray(bundles) && bundles.includes('@dsh/git-gui')
+    return Array.isArray(bundles) && bundles.includes(PKG_NAME)
   } catch {
     return false
   }
 }
 
 let text = fs.readFileSync(patchFile, 'utf8')
-const rowPresent = text.includes('@dsh/git-gui')
+const rowPresent = text.includes(PKG_NAME)
 if (bundlesIncludePackage()) {
   if (rowPresent) {
     console.log('[dsh-git-gui] 检测到 dsh.profile.bundles 与 cordis.patch.yml 同时注册本包,为避免重复注册,请手动删除 cordis.patch.yml 中的 git-gui 行')

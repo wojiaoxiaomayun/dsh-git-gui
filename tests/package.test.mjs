@@ -16,10 +16,11 @@ test('bundle contract: manifest declares dsh.bundle patch + exports + files', ()
 })
 
 test('bundle patch registers the plugin under id git-gui', () => {
+  const manifest = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'))
   const patch = fs.readFileSync(path.join(root, 'cordis.patch.yml'), 'utf8')
   assert.match(patch, /- insert:/)
   assert.match(patch, /- id: git-gui/)
-  assert.match(patch, /name: '@dsh\/git-gui'/)
+  assert.match(patch, new RegExp(`name: '${manifest.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}'`))
 })
 
 test('bundle patch parses as valid YAML', async () => {

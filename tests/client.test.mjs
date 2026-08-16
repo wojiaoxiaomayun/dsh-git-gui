@@ -1,5 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
+import fs from 'node:fs'
+import path from 'node:path'
 import { createRequire } from 'node:module'
 import { pathToFileURL } from 'node:url'
 
@@ -20,7 +22,8 @@ require('../lib/client.js')
 
 test('bundle registers itself under the package id', () => {
   assert.ok(capturedFactory !== null)
-  assert.equal(capturedFactory.id, '@dsh/git-gui')
+  const pkgName = JSON.parse(fs.readFileSync(path.resolve(import.meta.dirname, '..', 'package.json'), 'utf8')).name
+  assert.equal(capturedFactory.id, pkgName)
   assert.equal(typeof capturedFactory.factory, 'function')
 })
 
