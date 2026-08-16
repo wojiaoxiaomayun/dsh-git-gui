@@ -76,6 +76,23 @@ test('auto-patch skips writing the row when dsh.profile.bundles already register
   fs.rmSync(home, { recursive: true, force: true })
 })
 
+test('auto-patch skips writing under a pnpm-managed profile (dsh plugin flow)', () => {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'dsh-autopatch-'))
+  const profileDir = path.join(home, 'profiles', 'web')
+  const pkgDir = path.join(profileDir, 'node_modules', ...PKG_NAME.split('/'))
+  fs.mkdirSync(pkgDir, { recursive: true })
+  fs.mkdirSync(path.join(profileDir, 'node_modules', '.pnpm'), { recursive: true })
+  const patchFile = path.join(profileDir, 'cordis.patch.yml')
+  fs.writeFileSync(patchFile, '[]\n', 'utf8')
+
+  // 无显式参数:从安装路径(cwd)反推 profile
+  const result = spawnSync(process.execPath, [script], { cwd: pkgDir, env: { ...process.env }, encoding: 'utf8' })
+  assert.equal(result.status, 0)
+  assert.equal(fs.readFileSync(patchFile, 'utf8'), '[]\n', 'pnpm-managed installs must not write the row (bundle reconcile registers it)')
+  assert.match(result.stdout, /pnpm/)
+  fs.rmSync(home, { recursive: true, force: true })
+})
+
 test('auto-patch warns (without touching files) when bundle AND row are both present', () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'dsh-autopatch-'))
   const profileDir = path.join(home, 'profiles', 'web')

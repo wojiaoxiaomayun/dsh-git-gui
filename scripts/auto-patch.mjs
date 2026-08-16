@@ -57,8 +57,10 @@ if (process.argv[2] === undefined && !fs.existsSync(installed)) {
   process.exit(0)
 }
 
-// 经 `dsh plugin add` 安装时,本包会被对账进 dsh.profile.bundles,bundle 补丁层
-// (cordis.patch.yml)在启动时自动生效 —— 无需再往 cordis.patch.yml 写行。
+// 经 `dsh plugin add`(pnpm)安装时,本包会被对账进 dsh.profile.bundles,bundle
+// 补丁层在启动时自动生效 —— 无需再往 cordis.patch.yml 写行。pnpm 管理的
+// profile 必有 node_modules/.pnpm 目录,据此区分"dsh plugin 安装"与
+// "npm --prefix 直接安装"(后者没有 .pnpm,才需要本脚本兜底写行)。
 function bundlesIncludePackage() {
   try {
     const manifest = JSON.parse(fs.readFileSync(path.join(profileDir, 'package.json'), 'utf8'))
@@ -68,9 +70,21 @@ function bundlesIncludePackage() {
     return false
   }
 }
+function pnpmManaged() {
+  return fs.existsSync(path.join(profileDir, 'node_modules', '.pnpm'))
+}
 
 let text = fs.readFileSync(patchFile, 'utf8')
 const rowPresent = text.includes(PKG_NAME)
+if (pnpmManaged() && !process.argv[2]) {
+  // dsh plugin 流程:写行反而造成双注册(对账在其后才把本包加入 bundles)
+  if (rowPresent) {
+    console.log('[dsh-git-gui] 检测到 pnpm 管理的 profile:本包由 dsh.profile.bundles 注册(bundle 补丁层),cordis.patch.yml 中的行应删除以免重复注册')
+  } else {
+    console.log('[dsh-git-gui] pnpm 管理的 profile:本包将由 dsh plugin 对账进 bundles 自动注册,跳过写行')
+  }
+  process.exit(0)
+}
 if (bundlesIncludePackage()) {
   if (rowPresent) {
     console.log('[dsh-git-gui] 检测到 dsh.profile.bundles 与 cordis.patch.yml 同时注册本包,为避免重复注册,请手动删除 cordis.patch.yml 中的 git-gui 行')
