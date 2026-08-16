@@ -1,7 +1,7 @@
 # `dsh-git-gui`
 
 <p align="center">
-  <a href="./README.md">English</a> ·
+  <a href="../README.md">English</a>·
   <a href="./docs/README.zh-CN.md">简体中文</a>
 </p>
 
