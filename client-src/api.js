@@ -39,6 +39,7 @@ function makeGitApi(connection) {
     async unstage(cwd, paths, signal) { return call('unstage', { cwd, paths }, signal) },
     async discard(cwd, paths, untracked, signal) { return call('discard', { cwd, paths, untracked: untracked === true }, signal) },
     async commit(cwd, message, signal) { return call('commit', { cwd, message }, signal) },
+    async generateCommitMessage(cwd, signal) { return call('generateCommitMessage', { cwd }, signal) },
     async log(cwd, limit, path, signal) { return call('log', { cwd, limit, path: path ?? null }, signal) },
     async branches(cwd, signal) { return call('branches', { cwd }, signal) },
     async switchBranch(cwd, name, create, signal) { return call('switchBranch', { cwd, name, create: create === true }, signal) },

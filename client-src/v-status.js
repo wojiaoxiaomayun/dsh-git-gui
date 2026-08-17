@@ -85,6 +85,8 @@ function CommitBox() {
   const groups = groupFiles(status)
   const stagedCount = groups.staged.length
 
+  const [aiBusy, setAiBusy] = React.useState(false)
+
   const doCommit = async () => {
     if (msg.trim() === '') return
     const ok = await run(t('action.commit'), () => getApi().commit(cwd, msg.trim()))
@@ -102,6 +104,21 @@ function CommitBox() {
     await run(t('action.stageAll'), () => getApi().stage(cwd, paths))
   }
 
+  const aiGenerate = async () => {
+    if (busy || aiBusy) return
+    setAiBusy(true)
+    try {
+      const result = await getApi().generateCommitMessage(cwd)
+      if (result && result.ok && result.message) {
+        setState({ commitMsg: result.message })
+      }
+    } catch (error) {
+      setState({ toast: { kind: 'error', text: String(error?.message ?? error) } })
+    } finally {
+      setAiBusy(false)
+    }
+  }
+
   return h('div', { className: 'gg-commit' },
     h('textarea', {
       className: 'gg-commit-input',
@@ -117,7 +134,14 @@ function CommitBox() {
           `${t('commit.identity')} ${identity.name ?? '?'} <${identity.email ?? '?'}>`)
         : h('span', { className: 'gg-identity gg-identity-missing' }, t('commit.identityMissing')),
       h('span', { className: 'gg-spacer' }),
-      h('button', { type: 'button', className: 'gg-btn', disabled: busy, onClick: stageAll }, t('action.stageAll')),
+      h('button', {
+        type: 'button',
+        className: 'gg-mini-btn',
+        disabled: busy || aiBusy || stagedCount === 0,
+        title: t('action.aiCommitTooltip'),
+        onClick: aiGenerate,
+      }, aiBusy ? '…' : t('action.aiCommit')),
+      h('button', { type: 'button', className: 'gg-btn', disabled: busy || aiBusy, onClick: stageAll }, t('action.stageAll')),
       h('button', {
         type: 'button',
         className: 'gg-btn gg-btn-primary',
