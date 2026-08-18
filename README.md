@@ -50,6 +50,29 @@ dsh plugin --profile web update @amorligno/dsh-git-gui
 dsh plugin --profile web remove @amorligno/dsh-git-gui
 ```
 
+## Troubleshooting
+
+**The Git panel is stuck on "Detecting repository…"?**
+
+This is a known issue when the plugin is installed as a `link:` symlink (e.g. `dsh plugin --profile <name> add <local path>`): the host half resolves `@deepseek-ai/*` from the plugin repo's own `node_modules` instead of the DSH runtime's copies, so the `git/*` endpoint registration is invisible to the gateway.
+
+Use the official install methods instead (a real install automatically links the host's packages):
+
+```powershell
+dsh plugin --profile web add github:lovetree128/dsh-git-gui
+# or
+dsh plugin --profile web add @amorligno/dsh-git-gui
+```
+
+To mimic a real install locally, pack a tarball and install that (**do not** add a local directory):
+
+```powershell
+npm pack
+dsh plugin --profile web add .\amorligno-dsh-git-gui-0.1.2.tgz
+```
+
+If you do want a `link:` dev loop, run `scripts/link-host-deps.ps1` after every `npm install` / `pnpm install`, then fully restart DSH.
+
 ## Where to start
 
 After installing the plugin, open the DeepSeek Harness Web UI and click the added button in the bottom-left corner to open the sidebar. Then just enjoy the version control.

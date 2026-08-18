@@ -40,6 +40,29 @@ dsh plugin --profile web update @amorligno/dsh-git-gui
 ```powershell
 dsh plugin --profile web remove @amorligno/dsh-git-gui
 ```
+## 常见问题
+
+**Git 面板一直显示"正在检测仓库…"？**
+
+这是以 `link:` 符号链接方式安装（例如 `dsh plugin --profile <name> add 本地路径`）时的已知问题：符号链接使宿主端解析到插件仓库自己的 `node_modules` 副本，与 DSH 运行时的包不是同一份模块实例，导致 `git/*` 端点注册对网关不可见。
+
+请使用官方安装方式（真实安装会自动链接宿主包，不存在此问题）：
+
+```powershell
+dsh plugin --profile web add github:lovetree128/dsh-git-gui
+# 或
+dsh plugin --profile web add @amorligno/dsh-git-gui
+```
+
+本地测试要模拟真实安装时，请打包成 tgz 再安装（**不要**直接 add 本地目录）：
+
+```powershell
+npm pack
+dsh plugin --profile web add .\amorligno-dsh-git-gui-0.1.2.tgz
+```
+
+如果确实要用本地目录做 link 开发，仓库提供 `scripts/link-host-deps.ps1`：每次 `npm install`/`pnpm install` 后运行一次，再把 DSH 完全重启。
+
 ## 使用
 
 插件安装后打开DeepSeek Harness Web UI， 点击左下角新增按钮呼出侧边栏，然后享受版本控制吧。

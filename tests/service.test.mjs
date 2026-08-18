@@ -11,7 +11,7 @@ import { runGit } from '../lib/runner.js'
 const EXPECTED_ENDPOINTS = [
   'check', 'status', 'diff', 'log', 'branches', 'identity', 'activity',
   'tree', 'cat',
-  'stage', 'unstage', 'discard', 'commit', 'switchBranch', 'merge', 'pull',
+  'stage', 'unstage', 'discard', 'commit', 'generateCommitMessage', 'switchBranch', 'merge', 'pull',
   'push', 'fetch', 'remoteList', 'remoteAdd', 'stash', 'revert', 'reset', 'init',
 ]
 
