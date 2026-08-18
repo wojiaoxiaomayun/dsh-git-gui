@@ -3,12 +3,16 @@
  * Shared by the sidebar entry button and the overlay panel.
  */
 const { setState, getState, resetWorkspace } = require('./store')
+const { t } = require('./i18n')
 
 let api = null
 let pollTimer = null
-let pollActive = false
 let tabLoaders = {}   // tab -> loader fn
 let lastBadgeAt = 0
+let lastStatusAt = 0
+
+const OPEN_POLL_MS = 2000
+const BADGE_POLL_MS = 5000
 
 function startController(gitApi) {
   api = gitApi
@@ -68,10 +72,14 @@ function tick() {
   const s = getState()
   if (s.cwd === null || s.check?.repo !== true) return
   if (s.busy) return
+  const now = Date.now()
   if (s.open) {
+    // status refresh while the panel is open: at most every 2s
+    if (now - lastStatusAt < OPEN_POLL_MS) return
+    lastStatusAt = now
     refreshStatus()
-  } else if (Date.now() - lastBadgeAt >= 5000) {
-    lastBadgeAt = Date.now()
+  } else if (now - lastBadgeAt >= BADGE_POLL_MS) {
+    lastBadgeAt = now
     refreshStatus()
   }
 }
@@ -81,7 +89,7 @@ async function refreshCheck() {
   if (!api || s.cwd === null) return
   try {
     const result = await api.check(s.cwd)
-    setState({ check: result, version: result.gitVersion ?? s.version })
+    setState({ check: result })
     if (result.repo) refreshStatus()
   } catch (error) {
     setState({ check: { repo: false, gitVersion: '', error: error.message } })
@@ -94,7 +102,7 @@ async function refreshStatus() {
   if (s.busy) return
   try {
     const result = await api.status(s.cwd)
-    setState({ status: result, statusError: null, statusAt: Date.now() })
+    setState({ status: result, statusError: null })
   } catch (error) {
     setState({ statusError: String(error?.message ?? error) })
   }
@@ -112,7 +120,8 @@ async function refreshDiff() {
       : await api.diff(s.cwd, selected.path, selected.staged, null, selected.untracked)
     const current = getState()
     const cur = current.selected
-    if (cur === null || cur.path !== selected.path || cur.staged !== selected.staged || cur.untracked !== selected.untracked) return
+    if (cur === null || cur.path !== selected.path || cur.staged !== selected.staged
+      || cur.untracked !== selected.untracked || cur.cat !== selected.cat) return
     setState({ diff: { ...key, loading: false, error: null, data: result } })
   } catch (error) {
     const current = getState()
@@ -142,7 +151,7 @@ async function refreshTabData() {
 async function run(label, fn, refresh = true) {
   const s = getState()
   if (s.busy) {
-    setState({ toast: { kind: 'warn', text: require('./i18n').t('toast.busy') } })
+    setState({ toast: { kind: 'warn', text: t('toast.busy') } })
     return false
   }
   setState({ busy: true, busyLabel: label })
@@ -168,8 +177,8 @@ async function run(label, fn, refresh = true) {
 }
 
 /** Ask a confirmation, then run the operation when confirmed. */
-function confirmThen({ title, body, danger, action }) {
-  setState({ confirm: { title, body, danger, action } })
+function confirmThen({ body, danger, action }) {
+  setState({ confirm: { body, danger, action } })
 }
 
 /** Settle the open confirm dialog: run the stored action when ok=true. */
