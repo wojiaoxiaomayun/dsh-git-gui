@@ -1,7 +1,7 @@
 /**
  * Stash view: list, push, pop, apply, drop.
  */
-const { h, cx, React } = require('./dom')
+const { h, React } = require('./dom')
 const { useStore, setState } = require('./store')
 const { t } = require('./i18n')
 const { run, confirmThen, getApi, registerTabLoader } = require('./control')

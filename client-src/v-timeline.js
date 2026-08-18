@@ -2,7 +2,7 @@
  * AI edit timeline: mutations attributed to (session, turn, tool, path).
  * Clicking a row opens the current diff of that path.
  */
-const { h, cx, React } = require('./dom')
+const { h, React } = require('./dom')
 const { useStore, setState, getState } = require('./store')
 const { t } = require('./i18n')
 const { getApi, registerTabLoader, refreshDiff } = require('./control')
