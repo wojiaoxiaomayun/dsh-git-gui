@@ -128,6 +128,7 @@ function WorkspaceBar() {
   const check = useStore((s) => s.check)
   const status = useStore((s) => s.status)
   const busy = useStore((s) => s.busy)
+  const busyLabel = useStore((s) => s.busyLabel)
   const cwd = useStore((s) => s.cwd)
   const remotes = useStore((s) => s.remotes)
   const branch = status?.branch
@@ -161,7 +162,7 @@ function WorkspaceBar() {
       ? h('span', { className: 'gg-ws-ab' }, t('commit.aheadBehind', { a: branch.ahead ?? 0, b: branch.behind ?? 0 }))
       : null,
     h('span', { className: 'gg-ws-spacer' }),
-    busy && h('span', { className: 'gg-ws-busy' }, t('commit.busy')),
+    busy && h('span', { className: 'gg-ws-busy' }, busyLabel || t('commit.busy')),
     h('button', {
       type: 'button', className: 'gg-mini-btn', disabled: busy, title: 'git pull --ff-only',
       onClick: doPull,
