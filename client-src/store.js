@@ -14,13 +14,11 @@ const initial = {
   check: null,        // {repo, root, gitVersion}
   status: null,       // {branch, files}
   statusError: null,
-  statusAt: 0,
   selected: null,     // {path, staged, untracked, cat}
   diff: null,         // {path, staged, untracked, cat, loading, error, data}
   commits: [],
   logError: null,
   refs: [],
-  remotes: [],
   refsError: null,
   stashes: [],
   stashError: null,
@@ -32,9 +30,8 @@ const initial = {
   remoteModal: false,  // "添加远程仓库" 弹窗
   commitMsg: '',
   output: null,       // {title, text}
-  confirm: null,      // {title, body, danger, action, args}
+  confirm: null,      // {body, danger, action}
   toast: null,        // {kind, text}
-  version: null,
 }
 
 let state = initial
@@ -58,7 +55,6 @@ function resetWorkspace(cwd, sessionId) {
     open: state.open,
     tab: state.tab,
     commitMsg: state.commitMsg,
-    version: state.version,
   }
   for (const listener of listeners) listener()
 }
