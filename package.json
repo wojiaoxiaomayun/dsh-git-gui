@@ -26,8 +26,6 @@
     "lib/activity.js",
     "lib/client.js",
     "scripts/build-client.mjs",
-    "scripts/auto-patch.mjs",
-    "scripts/install.ps1",
     "package.json",
     "README.md",
     "cordis.patch.yml",
