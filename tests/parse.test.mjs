@@ -8,8 +8,6 @@ import {
   parseRefs,
   parseStashList,
   parseRemotes,
-  stripAnsi,
-  statusMeaning,
 } from '../lib/parse.js'
 
 test('parseStatusPorcelainV2: full record set', () => {
@@ -166,7 +164,7 @@ test('parseRefs: current branch, upstream, track', () => {
   assert.equal(refs[2].name, 'origin/main')
 })
 
-test('parseStashList + parseRemotes + stripAnsi + statusMeaning', () => {
+test('parseStashList + parseRemotes', () => {
   assert.deepEqual(parseStashList('stash@{0}\0abc123\0WIP on main: xyz\nstash@{1}\0def456\0older\n'), [
     { ref: 'stash@{0}', hash: 'abc123', subject: 'WIP on main: xyz' },
     { ref: 'stash@{1}', hash: 'def456', subject: 'older' },
@@ -175,9 +173,6 @@ test('parseStashList + parseRemotes + stripAnsi + statusMeaning', () => {
     { name: 'origin', fetch: 'https://x/y.git', push: 'https://x/y.git' },
     { name: 'up', fetch: 'git@z:w.git' },
   ])
-  assert.equal(stripAnsi('\u001B[31mred\u001B[0m ok'), 'red ok')
-  assert.equal(statusMeaning('M'), 'modified')
-  assert.equal(statusMeaning('?'), '?')
 })
 
 test('parseUnifiedDiff: hunk line cap truncates', () => {

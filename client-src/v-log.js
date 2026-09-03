@@ -1,8 +1,8 @@
 /**
  * Commit log view with per-commit revert action.
  */
-const { h, cx, ICONS, React } = require('./dom')
-const { useStore } = require('./store')
+const { h, ICONS, React } = require('./dom')
+const { useStore, setState } = require('./store')
 const { t } = require('./i18n')
 const { run, confirmThen, getApi, registerTabLoader } = require('./control')
 
@@ -25,10 +25,11 @@ function LogView() {
   React.useEffect(() => {
     registerTabLoader('log', async (w) => {
       const result = await getApi().log(w, 100, null)
-      setStateLog(result.commits)
+      setState({ commits: result.commits, logError: null })
     })
     if (cwd !== null) {
-      getApi().log(cwd, 100, null).then((r) => setStateLog(r.commits)).catch((e) => setStateLog(null, e.message))
+      getApi().log(cwd, 100, null).then((r) => setState({ commits: r.commits, logError: null }))
+        .catch((e) => setState({ commits: [], logError: String(e?.message ?? e) }))
     }
   }, [cwd])
 
@@ -59,11 +60,6 @@ function LogView() {
         onClick: () => revertCommit(c),
       }, ICONS.undo),
     )))
-}
-
-function setStateLog(commits, error) {
-  const { setState } = require('./store')
-  setState({ commits: commits ?? [], logError: error ?? null })
 }
 
 module.exports = { LogView }

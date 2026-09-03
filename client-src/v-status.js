@@ -2,9 +2,9 @@
  * Status view: staged/unstaged/untracked/conflict groups, commit box, diff pane.
  */
 const { h, cx, ICONS, React } = require('./dom')
-const { useStore, setState } = require('./store')
+const { useStore, setState, getState } = require('./store')
 const { t } = require('./i18n')
-const { run, confirmThen, getApi, refreshDiff, refreshStatus } = require('./control')
+const { run, confirmThen, getApi, refreshDiff } = require('./control')
 
 const LETTER_CLASS = {
   M: 'gg-l-m', A: 'gg-l-a', D: 'gg-l-d', R: 'gg-l-r', C: 'gg-l-c', U: 'gg-l-u', '?': 'gg-l-q', T: 'gg-l-t',
@@ -226,7 +226,6 @@ function DiffPane() {
 function StatusView() {
   const status = useStore((s) => s.status)
   const statusError = useStore((s) => s.statusError)
-  const selected = useStore((s) => s.selected)
   const cwd = useStore((s) => s.cwd)
   const busy = useStore((s) => s.busy)
   const groups = groupFiles(status)
@@ -249,8 +248,8 @@ function StatusView() {
       ? () => getApi().unstage(cwd, [file.path])
       : () => getApi().stage(cwd, [file.path])
     run(kind === 'staged' ? t('action.unstage') : t('action.stage'), fn).then(() => {
-      const s = getStateSel()
-      if (s && s.path === file.path) refreshDiff()
+      const sel = getState().selected
+      if (sel && sel.path === file.path) refreshDiff()
     })
   }
 
@@ -261,8 +260,8 @@ function StatusView() {
         ? t('confirm.cleanFile', { name: file.path })
         : t('confirm.discardFile', { name: file.path }),
       action: () => run(t('action.discard'), () => getApi().discard(cwd, [file.path], kind === 'untracked')).then(() => {
-        const s = getStateSel()
-        if (s && s.path === file.path) setState({ selected: null, diff: null })
+        const sel = getState().selected
+        if (sel && sel.path === file.path) setState({ selected: null, diff: null })
       }),
     })
   }
@@ -302,10 +301,6 @@ function StatusView() {
           h(DiffPane, {}),
         ),
   )
-}
-
-function getStateSel() {
-  return require('./store').getState().selected
 }
 
 module.exports = { StatusView }

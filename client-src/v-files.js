@@ -79,7 +79,6 @@ function FilesView() {
   const cwd = useStore((s) => s.cwd)
   const [filter, setFilter] = React.useState('')
   const [collapsed, setCollapsed] = React.useState(() => new Set())
-  const [version, setVersion] = React.useState(0)
 
   React.useEffect(() => {
     registerTabLoader('files', async (w) => {
@@ -97,7 +96,6 @@ function FilesView() {
     if (isCollapsed) next.delete(path)
     else next.add(path)
     setCollapsed(next)
-    setVersion((v) => v + 1)
   }
 
   const open = (file) => {
@@ -127,7 +125,7 @@ function FilesView() {
         onChange: (e) => setFilter(e.target.value),
       }),
       h(Legend, {})),
-    h('div', { className: 'gg-files-tree', key: version },
+    h('div', { className: 'gg-files-tree' },
       h(Row, { node: root, depth: 0, collapsed, onToggle: toggle, onOpen: open, path: '', rendered })),
     tree.truncated && h('div', { className: 'gg-files-note' }, t('files.tooMany', { n: files.length })),
   )
