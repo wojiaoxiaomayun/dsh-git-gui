@@ -1,5 +1,5 @@
 {
-  "name": "@amorligno/dsh-git-gui",
+  "name": "@dsh-xhl/dsh-git-gui",
   "version": "0.1.3",
   "description": "Git GUI panel for the DeepSeek Harness web surface: visualize working-tree changes (including every modification the agent makes), stage/commit/branch/merge/log/pull/push/stash/revert — all from the browser.",
   "type": "module",
