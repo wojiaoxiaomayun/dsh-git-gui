@@ -16,7 +16,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/lovetree128/dsh-git-gui.git"
+    "url": "git+https://github.com/wojiaoxiaomayun/dsh-git-gui.git"
   },
   "files": [
     "lib/index.js",

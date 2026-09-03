@@ -27,13 +27,13 @@ A **Git graphical interface plugin** for the DeepSeek Harness Web UI: view, stag
 ### GitHub Source
 
 ```powershell
-dsh plugin --profile web add github:lovetree128/dsh-git-gui
+dsh plugin --profile web add github:wojiaoxiaomayun/dsh-git-gui
 ```
 
 ### npm Source
 
 ```powershell
-dsh plugin --profile web add @amorligno/dsh-git-gui
+dsh plugin --profile web add @dsh-xhl/dsh-git-gui
 ```
 
 After installation, restart `dsh web` and refresh the browser page.
@@ -41,13 +41,13 @@ After installation, restart `dsh web` and refresh the browser page.
 ## Update
 
 ```powershell
-dsh plugin --profile web update @amorligno/dsh-git-gui
+dsh plugin --profile web update @dsh-xhl/dsh-git-gui
 ```
 
 ## Uninstall
 
 ```powershell
-dsh plugin --profile web remove @amorligno/dsh-git-gui
+dsh plugin --profile web remove @dsh-xhl/dsh-git-gui
 ```
 
 ## Troubleshooting
@@ -59,16 +59,16 @@ This is a known issue when the plugin is installed as a `link:` symlink (e.g. `d
 Use the official install methods instead (a real install automatically links the host's packages):
 
 ```powershell
-dsh plugin --profile web add github:lovetree128/dsh-git-gui
+dsh plugin --profile web add github:wojiaoxiaomayun/dsh-git-gui
 # or
-dsh plugin --profile web add @amorligno/dsh-git-gui
+dsh plugin --profile web add @dsh-xhl/dsh-git-gui
 ```
 
 To mimic a real install locally, pack a tarball and install that (**do not** add a local directory):
 
 ```powershell
 npm pack
-dsh plugin --profile web add .\amorligno-dsh-git-gui-0.1.2.tgz
+dsh plugin --profile web add .\dsh-xhl-dsh-git-gui-0.1.3.tgz
 ```
 
 If you do want a `link:` dev loop, run `scripts/link-host-deps.ps1` after every `npm install` / `pnpm install`, then fully restart DSH.

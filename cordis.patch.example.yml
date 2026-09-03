@@ -3,4 +3,4 @@
 # 注意:bundle 安装(dsh plugin add)不需要这一行 —— 补丁层会自动注册。
 - insert:
     - id: git-gui
-      name: '@amorligno/dsh-git-gui'
+      name: '@dsh-xhl/dsh-git-gui'

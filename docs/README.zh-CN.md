@@ -25,20 +25,20 @@ DeepSeek Harness Web UI 的 **Git 图形界面插件**:在浏览器里直接查�
 ## 安装
 ### GitHub源
 ```powershell
-dsh plugin --profile web add github:lovetree128/dsh-git-gui
+dsh plugin --profile web add github:wojiaoxiaomayun/dsh-git-gui
 ```
 ### npm源
 ```powershell
-dsh plugin --profile web add @amorligno/dsh-git-gui
+dsh plugin --profile web add @dsh-xhl/dsh-git-gui
 ```
 安装后请重启`dsh web`并刷新浏览器页面
 ## 更新
 ```powershell
-dsh plugin --profile web update @amorligno/dsh-git-gui
+dsh plugin --profile web update @dsh-xhl/dsh-git-gui
 ```
 ## 卸载
 ```powershell
-dsh plugin --profile web remove @amorligno/dsh-git-gui
+dsh plugin --profile web remove @dsh-xhl/dsh-git-gui
 ```
 ## 常见问题
 
@@ -49,16 +49,16 @@ dsh plugin --profile web remove @amorligno/dsh-git-gui
 请使用官方安装方式（真实安装会自动链接宿主包，不存在此问题）：
 
 ```powershell
-dsh plugin --profile web add github:lovetree128/dsh-git-gui
+dsh plugin --profile web add github:wojiaoxiaomayun/dsh-git-gui
 # 或
-dsh plugin --profile web add @amorligno/dsh-git-gui
+dsh plugin --profile web add @dsh-xhl/dsh-git-gui
 ```
 
 本地测试要模拟真实安装时，请打包成 tgz 再安装（**不要**直接 add 本地目录）：
 
 ```powershell
 npm pack
-dsh plugin --profile web add .\amorligno-dsh-git-gui-0.1.2.tgz
+dsh plugin --profile web add .\dsh-xhl-dsh-git-gui-0.1.3.tgz
 ```
 
 如果确实要用本地目录做 link 开发，仓库提供 `scripts/link-host-deps.ps1`：每次 `npm install`/`pnpm install` 后运行一次，再把 DSH 完全重启。
