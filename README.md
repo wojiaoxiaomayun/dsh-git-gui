@@ -75,7 +75,7 @@ If you do want a `link:` dev loop, run `scripts/link-host-deps.ps1` after every 
 
 ## Where to start
 
-After installing the plugin, open the DeepSeek Harness Web UI and click the added button in the bottom-left corner to open the sidebar. Then just enjoy the version control.
+After installing the plugin, open the DeepSeek Harness Web UI and click the Git button (with a changed-files count badge) in the top-right corner of the conversation header to open the floating panel. On the hero / new-chat page (before a conversation exists) the same button is shown pinned to the same top-right spot.
 
 ## Structure
 
@@ -85,7 +85,7 @@ Host (Node):  GitService (@Remote, namespace `git`, Typert SRC mode → git/* en
                ├─ parse.js    porcelain v2 / unified diff / log / refs / stash parsing
                └─ activity.js session/event → (session, turn, tool, file) timeline (Stage 2)
 
-Client (Browser): sidebar.footer.action entry button (uncommitted-count badge) + shell.overlay floating panel
+Client (Browser): conversation.session.header.utilities entry button (uncommitted-count badge) + shell.overlay floating panel + hero-page floating button
                ├─ control.js  session cwd synchronization + polling + operation runner + confirmation dialogs
                ├─ v-*.js      view components (React.createElement, no JSX)
                └─ styles.js   theme tokens (--dsw-alias-*) and styles, adaptive to light/dark mode

@@ -9,7 +9,7 @@
 
 const { startController } = require('./control')
 const { makeGitApi } = require('./api')
-const { FooterButton } = require('./v-footer')
+const { HeaderButton, HeroGitButton } = require('./v-header')
 const { GitPanel } = require('./v-panel')
 const { css } = require('./styles')
 const PKG_ID = require('./pkg-id')
@@ -34,17 +34,27 @@ function apply(ctx) {
   startController(api)
 
   ctx.effect(() => {
-    const disposeFooter = ctx.slots.inject('sidebar.footer.action', () => ctx.slots.register(
-      { name: 'sidebar.footer.action', id: 'dsh-git-gui', order: 20 },
-      (props) => FooterButton(props),
+    const disposeHeader = ctx.slots.inject('conversation.session.header.utilities', () => ctx.slots.register(
+      { name: 'conversation.session.header.utilities', id: 'dsh-git-gui', order: 20 },
+      (props) => HeaderButton(props),
     ))
-    const disposePanel = ctx.slots.inject('shell.overlay', () => ctx.slots.register(
-      { name: 'shell.overlay', id: 'dsh-git-gui' },
-      (props) => GitPanel(props),
-    ))
+    const disposeOverlay = ctx.slots.inject('shell.overlay', () => {
+      const disposePanel = ctx.slots.register(
+        { name: 'shell.overlay', id: 'dsh-git-gui' },
+        (props) => GitPanel(props),
+      )
+      const disposeHero = ctx.slots.register(
+        { name: 'shell.overlay', id: 'dsh-git-gui-hero', order: 90 },
+        (props) => HeroGitButton(props),
+      )
+      return () => {
+        disposePanel()
+        disposeHero()
+      }
+    })
     return () => {
-      disposeFooter()
-      disposePanel()
+      disposeHeader()
+      disposeOverlay()
     }
   })
 }

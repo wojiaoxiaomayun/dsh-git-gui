@@ -32,7 +32,7 @@ test('factory materializes a cordis object plugin face', () => {
   assert.deepEqual(exports.inject, ['connection', 'slots'])
 })
 
-test('apply registers the footer entry and the overlay panel', () => {
+test('apply registers the header entry and the overlay panel', () => {
   const exports = capturedFactory.factory((spec) => require(spec))
   const registrations = []
   const injected = []
@@ -55,31 +55,33 @@ test('apply registers the footer entry and the overlay panel', () => {
     },
   }
   exports.apply(mockCtx)
-  assert.deepEqual(injected, ['sidebar.footer.action', 'shell.overlay'])
-  const footer = registrations.find((r) => r.name === 'sidebar.footer.action')
-  const panel = registrations.find((r) => r.name === 'shell.overlay')
-  assert.equal(footer.id, 'dsh-git-gui')
+  assert.deepEqual(injected, ['conversation.session.header.utilities', 'shell.overlay'])
+  const header = registrations.find((r) => r.name === 'conversation.session.header.utilities')
+  const panel = registrations.find((r) => r.name === 'shell.overlay' && r.id === 'dsh-git-gui')
+  const hero = registrations.find((r) => r.name === 'shell.overlay' && r.id === 'dsh-git-gui-hero')
+  assert.equal(header.id, 'dsh-git-gui')
   assert.equal(panel.id, 'dsh-git-gui')
-  assert.equal(typeof footer.component, 'undefined') // options-only object; component is the 2nd arg of register
+  assert.equal(hero.id, 'dsh-git-gui-hero')
+  assert.equal(hero.order, 90)
+  assert.equal(typeof header.component, 'undefined') // options-only object; component is the 2nd arg of register
 })
 
-test('footer entry renders (SSR smoke) with a badge when files changed', () => {
+test('header entry renders (SSR smoke) with a badge when files changed', () => {
   const React = require('react')
   const { renderToString } = require('react-dom/server')
   const exports = capturedFactory.factory((spec) => require(spec))
 
   // capture the component passed as the second register() argument
-  let footerComponent = null
+  let headerComponent = null
   const mockCtx = {
     connection: { rpc: { call: async () => ({ ok: true, value: { ok: true } }) } },
     slots: {
       inject(name, callback) {
-        if (name === 'sidebar.footer.action') callback()
-        else callback()
+        callback()
         return () => {}
       },
       register(options, component) {
-        if (options.name === 'sidebar.footer.action') footerComponent = component
+        if (options.name === 'conversation.session.header.utilities') headerComponent = component
         return () => {}
       },
     },
@@ -88,7 +90,7 @@ test('footer entry renders (SSR smoke) with a badge when files changed', () => {
     },
   }
   exports.apply(mockCtx)
-  assert.equal(typeof footerComponent, 'function')
+  assert.equal(typeof headerComponent, 'function')
 
   // session hook that yields a session whose workspace has 2 changed files
   const sessions = {
@@ -100,9 +102,8 @@ test('footer entry renders (SSR smoke) with a badge when files changed', () => {
     },
   }
   const props = {
-    wide: true,
+    sessionId: 'sess-1',
     useSessions: (selector) => selector(sessions),
-    useWorkspaces: () => ({}),
   }
 
   // seed the store with a status snapshot carrying 2 changed files;
@@ -118,8 +119,22 @@ test('footer entry renders (SSR smoke) with a badge when files changed', () => {
     statusError: null,
   })
 
-  const html = renderToString(React.createElement(footerComponent, props))
-  assert.match(html, /Git/)
+  const html = renderToString(React.createElement(headerComponent, props))
+  assert.match(html, /gg-header-btn/)
   assert.match(html, /gg-badge/)
   assert.match(html, />2</)
+})
+
+test('hero twin mounts GitButton as a component (h(GitButton)), not a direct call', () => {
+  // The hero FAB previously rendered `GitButton()` inside HeroGitButton. A
+  // direct call counts GitButton's hooks (useStore → useRef) against
+  // HeroGitButton, and because pos starts null and only later becomes
+  // non-null, the hook count flips between renders → React error #310, which
+  // crashed the whole shell.overlay slot in the hero. The fix mounts it via
+  // h(GitButton) so the hooks live in GitButton's own instance.
+  const bundle = fs.readFileSync(path.resolve(import.meta.dirname, '..', 'lib', 'client.js'), 'utf8')
+  // HeroGitButton returns h('div', {className: 'gg-hero-fab', ...}, h(GitButton))
+  assert.match(bundle, /gg-hero-fab'[\s\S]*?h\(GitButton\)/)
+  // And never a bare GitButton() call inside the hero return
+  assert.doesNotMatch(bundle, /gg-hero-fab'[\s\S]*?GitButton\(\)/)
 })

@@ -320,25 +320,37 @@ body[data-ds-dark-theme] { --gg-on-accent: #10141b; }
 .gg-toast-err { border-color: var(--dsw-alias-state-error-primary); color: var(--dsw-alias-state-error-primary); }
 .gg-toast-warn { border-color: var(--dsw-alias-state-warn-primary); color: var(--dsw-alias-state-warn-primary); }
 
-/* sidebar footer entry */
-.gg-footer-btn {
-  display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;
-  border: none; background: transparent; cursor: pointer;
-  color: var(--dsw-alias-label-secondary); font: inherit; font-size: 12px;
-  padding: 0 6px; height: 36px; border-radius: 8px; position: relative;
+/* conversation header entry (top-right) */
+.gg-header-btn {
+  position: relative;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px;
+  border: .5px solid var(--dsw-alias-border-l3);
+  border-radius: 14px;
+  background: transparent;
+  cursor: pointer;
+  color: var(--dsw-alias-label-secondary);
+  padding: 0;
 }
-.gg-footer-btn:hover { background: var(--dsw-alias-interactive-bg-hover); color: var(--dsw-alias-label-primary); }
-.gg-footer-btn.gg-active { color: var(--dsw-alias-label-primary); background: var(--dsw-alias-interactive-bg-hover); }
-.gg-footer-icon { display: inline-flex; align-items: center; justify-content: center; }
-.gg-footer-marks { display: inline-flex; gap: 3px; align-items: center; }
-.gg-badge {
+.gg-header-btn:hover:not(:disabled) { background: var(--dsw-alias-interactive-bg-hover); color: var(--dsw-alias-label-primary); }
+.gg-header-btn:active:not(:disabled) { background: var(--dsw-alias-interactive-bg-active); }
+.gg-header-btn.gg-active { color: var(--dsw-alias-label-primary); background: var(--dsw-alias-interactive-bg-hover); }
+.gg-header-icon { display: inline-flex; align-items: center; justify-content: center; }
+.gg-header-btn .gg-badge {
+  position: absolute; top: -4px; right: -4px;
   min-width: 15px; height: 15px; padding: 0 4px; border-radius: 999px;
   background: var(--dsw-alias-brand-primary); color: var(--gg-on-accent);
   font-size: 10px; font-weight: 700;
   display: inline-flex; align-items: center; justify-content: center;
   box-sizing: border-box;
 }
-.gg-badge-err { background: var(--dsw-alias-state-error-primary); }
+.gg-header-btn .gg-badge-err { background: var(--dsw-alias-state-error-primary); }
+
+/* hero / blank-session floating entry: pinned over the conversation column's
+   top-right corner while the column is in its hero phase. No explicit
+   z-index keeps it below the plugin's own floating panel and sibling overlay
+   entries (modal, notices) — mirroring the file-editor hero FAB. */
+.gg-hero-fab { position: fixed; pointer-events: auto; }
 
 .gg-icon { flex: none; }
 `
