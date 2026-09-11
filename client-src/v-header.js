@@ -10,7 +10,7 @@
 const { h, cx, ICONS, React } = require('./dom')
 const { useStore, setState } = require('./store')
 const { t } = require('./i18n')
-const { applySession } = require('./control')
+const { applySession, bumpAutoFetch } = require('./control')
 
 function changedCount(status) {
   if (!status || !status.files) return 0
@@ -31,7 +31,11 @@ function GitButton() {
   const check = useStore((s) => s.check)
 
   const title = t('panel.title')
-  const onClick = () => setState({ open: !open })
+  const onClick = () => {
+    const next = !open
+    setState({ open: next })
+    if (next) bumpAutoFetch() // refresh ahead/behind counts as soon as the panel opens
+  }
 
   const badge = count > 0
     ? h('span', { className: 'gg-badge', title: `${count}` }, count > 99 ? '99+' : String(count))

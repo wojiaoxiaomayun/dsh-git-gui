@@ -194,7 +194,7 @@ function GitPanel(props) {
   const running = useStore((s) => s.sessionRunning)
   const check = useStore((s) => s.check)
   const busy = useStore((s) => s.busy)
-  const [width, setWidth] = React.useState(460)
+  const [width, setWidth] = React.useState(520)
   const [tab, setTabLocal] = React.useState('status')
   const dragRef = React.useRef(null)
 

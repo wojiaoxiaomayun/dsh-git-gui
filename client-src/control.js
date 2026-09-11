@@ -10,9 +10,18 @@ let pollTimer = null
 let tabLoaders = {}   // tab -> loader fn
 let lastBadgeAt = 0
 let lastStatusAt = 0
+let lastAutoFetchAt = 0
+let autoFetchRunning = false
 
 const OPEN_POLL_MS = 2000
 const BADGE_POLL_MS = 5000
+
+// How often the panel refreshes remote-tracking refs in the background so the
+// "领先 N / 落后 M" bar stays truthful. `git status` alone only knows what the
+// local refs/remotes/* say; without an occasional fetch the "落后" count can
+// never appear after someone else pushes. Fetching every 30s keeps it fresh
+// without hammering the network.
+const AUTO_FETCH_MS = 30_000
 
 function startController(gitApi) {
   api = gitApi
@@ -78,9 +87,34 @@ function tick() {
     if (now - lastStatusAt < OPEN_POLL_MS) return
     lastStatusAt = now
     refreshStatus()
+    maybeAutoFetch()
   } else if (now - lastBadgeAt >= BADGE_POLL_MS) {
     lastBadgeAt = now
     refreshStatus()
+  }
+}
+
+/**
+ * Periodically fetch remotes while the panel is open so the "领先/落后" counts
+ * reflect reality (git status only compares against locally cached refs).
+ * Failures (offline, no remote) are silent — the panel just keeps the last
+ * known counts.
+ */
+async function maybeAutoFetch() {
+  const s = getState()
+  if (!api || s.cwd === null || s.check?.repo !== true) return
+  if (s.busy || autoFetchRunning) return
+  const now = Date.now()
+  if (now - lastAutoFetchAt < AUTO_FETCH_MS) return
+  lastAutoFetchAt = now
+  autoFetchRunning = true
+  try {
+    await api.fetch(s.cwd)
+    refreshStatus()
+  } catch {
+    // offline / no remote / fetch rejected — nothing to do
+  } finally {
+    autoFetchRunning = false
   }
 }
 
@@ -181,6 +215,11 @@ function confirmThen({ body, danger, action }) {
   setState({ confirm: { body, danger, action } })
 }
 
+/** Force the next open-panel tick to fetch remotes immediately (on open). */
+function bumpAutoFetch() {
+  lastAutoFetchAt = 0
+}
+
 /** Settle the open confirm dialog: run the stored action when ok=true. */
 function settleConfirm(ok) {
   const s = getState()
@@ -205,4 +244,5 @@ module.exports = {
   run,
   confirmThen,
   settleConfirm,
+  bumpAutoFetch,
 }
