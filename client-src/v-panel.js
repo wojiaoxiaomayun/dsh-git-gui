@@ -148,6 +148,7 @@ function WorkspaceBar() {
   const doPull = () => requireRemote(() => run(t('action.pull'), () => getApi().pull(cwd, 'ff-only')))
   const doPush = () => requireRemote(() => run(t('action.push'), () => getApi().push(cwd)))
   const doFetch = () => requireRemote(() => run(t('action.fetch'), () => getApi().fetch(cwd)))
+  const doSync = () => requireRemote(() => run(t('action.sync'), () => getApi().sync(cwd)))
 
   return h('div', { className: 'gg-wsbar' },
     h('span', { className: 'gg-ws-name', title: root ?? undefined },
@@ -163,6 +164,10 @@ function WorkspaceBar() {
       : null,
     h('span', { className: 'gg-ws-spacer' }),
     busy && h('span', { className: 'gg-ws-busy' }, busyLabel || t('commit.busy')),
+    h('button', {
+      type: 'button', className: 'gg-mini-btn gg-mini-sync', disabled: busy, title: t('action.syncTooltip'),
+      onClick: doSync,
+    }, ICONS.sync, t('action.sync')),
     h('button', {
       type: 'button', className: 'gg-mini-btn', disabled: busy, title: 'git pull --ff-only',
       onClick: doPull,

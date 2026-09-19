@@ -98,7 +98,7 @@ Then fully restart `dsh web` (the running process caches the failed module load)
 
 ## Where to start
 
-After installing the plugin, open the DeepSeek Harness Web UI and click the Git button (with a changed-files count badge) in the top-right corner of the conversation header to open the floating panel. On the hero / new-chat page (before a conversation exists) the same button is shown pinned to the same top-right spot.
+After installing the plugin, open the DeepSeek Harness Web UI and click the Git button (with a changed-files count badge) in the top-right corner of the conversation header to open the floating panel. On the hero / new-chat page (before a conversation exists) the same button shows in the top-right spot through the `hero.flex` slot declared by the [dsh-hero-flex](https://github.com/wojiaoxiaomayun/dsh-hero-flex) plugin — without that plugin installed, the hero shows nothing.
 
 ## Structure
 
@@ -108,7 +108,7 @@ Host (Node):  GitService (@Remote, namespace `git`, Typert SRC mode → git/* en
                ├─ parse.js    porcelain v2 / unified diff / log / refs / stash parsing
                └─ activity.js session/event → (session, turn, tool, file) timeline (Stage 2)
 
-Client (Browser): conversation.session.header.utilities entry button (uncommitted-count badge) + shell.overlay floating panel + hero-page floating button
+Client (Browser): conversation.session.header.utilities entry button (uncommitted-count badge) + shell.overlay floating panel + hero.flex entry (via dsh-hero-flex)
                ├─ control.js  session cwd synchronization + polling + operation runner + confirmation dialogs
                ├─ v-*.js      view components (React.createElement, no JSX)
                └─ styles.js   theme tokens (--dsw-alias-*) and styles, adaptive to light/dark mode

@@ -112,6 +112,7 @@ test('write endpoints pass boundary validation', async () => {
   checkResult('stash pop', await service.stash(repo, 'pop', null, 'stash@{0}'))
   checkResult('reset mixed', await service.reset(repo, 'mixed', 'HEAD'))
   checkResult('fetch (no remote, structured failure)', await service.fetch(repo))
+  checkResult('sync (no remote, structured failure)', await service.sync(repo))
 })
 
 test('error results pass boundary validation too', async () => {

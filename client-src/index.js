@@ -9,7 +9,7 @@
 
 const { startController } = require('./control')
 const { makeGitApi } = require('./api')
-const { HeaderButton, HeroGitButton } = require('./v-header')
+const { HeaderButton, HeroFlexEntry } = require('./v-header')
 const { GitPanel } = require('./v-panel')
 const { css } = require('./styles')
 const PKG_ID = require('./pkg-id')
@@ -43,18 +43,21 @@ function apply(ctx) {
         { name: 'shell.overlay', id: 'dsh-git-gui' },
         (props) => GitPanel(props),
       )
-      const disposeHero = ctx.slots.register(
-        { name: 'shell.overlay', id: 'dsh-git-gui-hero', order: 90 },
-        (props) => HeroGitButton(props),
-      )
-      return () => {
-        disposePanel()
-        disposeHero()
-      }
+      return disposePanel
     })
+    // Hero / blank-session entry: rendered through the `hero.flex` slot that
+    // the dsh-hero-flex plugin declares while occupying the header's corner
+    // seat. `slots.inject` waits for the declaration, so without dsh-hero-flex
+    // installed this entry never mounts and the hero shows nothing — no corner
+    // fight, no fallback.
+    const disposeHero = ctx.slots.inject('hero.flex', () => ctx.slots.register(
+      { name: 'hero.flex', id: 'dsh-git-gui', order: 20, label: 'Git（hero）' },
+      (props) => HeroFlexEntry(props),
+    ))
     return () => {
       disposeHeader()
       disposeOverlay()
+      disposeHero()
     }
   })
 }

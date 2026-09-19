@@ -32,7 +32,7 @@ test('factory materializes a cordis object plugin face', () => {
   assert.deepEqual(exports.inject, ['connection', 'slots'])
 })
 
-test('apply registers the header entry and the overlay panel', () => {
+test('apply registers the header entry, the overlay panel, and the hero.flex entry', () => {
   const exports = capturedFactory.factory((spec) => require(spec))
   const registrations = []
   const injected = []
@@ -55,14 +55,18 @@ test('apply registers the header entry and the overlay panel', () => {
     },
   }
   exports.apply(mockCtx)
-  assert.deepEqual(injected, ['conversation.session.header.utilities', 'shell.overlay'])
+  assert.deepEqual(injected, ['conversation.session.header.utilities', 'shell.overlay', 'hero.flex'])
   const header = registrations.find((r) => r.name === 'conversation.session.header.utilities')
-  const panel = registrations.find((r) => r.name === 'shell.overlay' && r.id === 'dsh-git-gui')
-  const hero = registrations.find((r) => r.name === 'shell.overlay' && r.id === 'dsh-git-gui-hero')
+  const panel = registrations.find((r) => r.name === 'shell.overlay')
+  const hero = registrations.find((r) => r.name === 'hero.flex')
   assert.equal(header.id, 'dsh-git-gui')
   assert.equal(panel.id, 'dsh-git-gui')
-  assert.equal(hero.id, 'dsh-git-gui-hero')
-  assert.equal(hero.order, 90)
+  assert.equal(hero.id, 'dsh-git-gui')
+  assert.equal(hero.order, 20)
+  // The hero entry rides the hero-flex plugin's slot only — the plugin no
+  // longer occupies the corner seat nor floats a shell.overlay fallback.
+  assert.equal(registrations.some((r) => r.name === 'conversation.session.header.corner'), false)
+  assert.equal(registrations.some((r) => r.name === 'shell.overlay' && r.id === 'dsh-git-gui-hero'), false)
   assert.equal(typeof header.component, 'undefined') // options-only object; component is the 2nd arg of register
 })
 
@@ -129,18 +133,62 @@ test('header entry renders (SSR smoke) with a badge when files changed', () => {
   assert.match(html, />2</)
 })
 
-test('hero twin mounts GitButton as a component (h(GitButton)), not a direct call', () => {
+test('hero entry mounts GitButton as a component (h(GitButton)), not a direct call', () => {
   // The hero FAB previously rendered `GitButton()` inside HeroGitButton. A
-  // direct call counts GitButton's hooks (useStore → useRef) against
-  // HeroGitButton, and because pos starts null and only later becomes
-  // non-null, the hook count flips between renders → React error #310, which
-  // crashed the whole shell.overlay slot in the hero. The fix mounts it via
+  // direct call counts GitButton's hooks (useStore → useRef) against the
+  // parent, and the hook count flipped between renders → React error #310,
+  // which crashed the whole slot in the hero. The fix mounts it via
   // h(GitButton) so the hooks live in GitButton's own instance.
   const bundle = fs.readFileSync(path.resolve(import.meta.dirname, '..', 'lib', 'client.js'), 'utf8')
-  // HeroGitButton returns h('div', {className: 'gg-hero-fab', ...}, h(GitButton))
-  assert.match(bundle, /gg-hero-fab'[\s\S]*?h\(GitButton\)/)
+  // HeroFlexEntry returns h('span', {className: 'gg-hero-flex', ...}, h(GitButton))
+  assert.match(bundle, /gg-hero-flex'[\s\S]*?h\(GitButton\)/)
   // And never a bare GitButton() call inside the hero return
-  assert.doesNotMatch(bundle, /gg-hero-fab'[\s\S]*?GitButton\(\)/)
+  assert.doesNotMatch(bundle, /gg-hero-flex'[\s\S]*?GitButton\(\)/)
+  // No corner-seat or floating-fab machinery remains: the hero rides the
+  // hero-flex plugin's slot only.
+  assert.doesNotMatch(bundle, /data-conversation-header-corner/)
+  assert.doesNotMatch(bundle, /gg-hero-fab/)
+})
+
+test('hero.flex entry renders the Git button (SSR smoke)', () => {
+  const React = require('react')
+  const { renderToString } = require('react-dom/server')
+  const exports = capturedFactory.factory((spec) => require(spec))
+
+  let heroComponent = null
+  const mockCtx = {
+    connection: { rpc: { call: async () => ({ ok: true, value: { ok: true } }) } },
+    slots: {
+      inject(name, callback) {
+        callback()
+        return () => {}
+      },
+      register(options, component) {
+        if (options.name === 'hero.flex') heroComponent = component
+        return () => {}
+      },
+    },
+    effect(fn) {
+      fn()
+    },
+  }
+  exports.apply(mockCtx)
+  assert.equal(typeof heroComponent, 'function')
+
+  const sessions = {
+    ids: ['sess-1'],
+    byId: {
+      'sess-1': {
+        id: 'sess-1', cwd: 'C:\\repo', running: false, blank: false,
+        displayTitle: 't', updatedAt: 0, retainedBy: { mainView: 1 },
+      },
+    },
+    phase: 'ready',
+  }
+  const props = { sessionId: 'sess-1', useSessions: (selector) => selector(sessions) }
+  const html = renderToString(React.createElement(heroComponent, props))
+  assert.match(html, /gg-hero-flex/)
+  assert.match(html, /gg-header-btn/)
 })
 
 test('applySession derives the workspace from the DSH list snapshot (no `current` field)', () => {

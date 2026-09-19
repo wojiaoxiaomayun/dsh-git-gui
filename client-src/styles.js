@@ -64,6 +64,12 @@ body[data-ds-dark-theme] { --gg-on-accent: #10141b; }
 .gg-mini-btn:hover { background: var(--dsw-alias-interactive-bg-hover); color: var(--dsw-alias-label-primary); }
 .gg-mini-btn:disabled { opacity: .4; cursor: default; }
 .gg-mini-danger:hover { color: var(--dsw-alias-state-error-primary); }
+.gg-mini-sync {
+  border-color: var(--dsw-alias-brand-primary);
+  color: var(--dsw-alias-brand-primary);
+}
+.gg-mini-sync:hover { background: var(--dsw-alias-interactive-bg-hover); color: var(--dsw-alias-brand-primary); }
+.gg-mini-sync:disabled { border-color: var(--dsw-alias-border-l2); color: var(--dsw-alias-label-secondary); }
 .gg-row-btn { width: 22px; height: 22px; opacity: 0; }
 .gg-file:hover .gg-row-btn, .gg-log-row:hover .gg-row-btn { opacity: 1; }
 
@@ -346,11 +352,10 @@ body[data-ds-dark-theme] { --gg-on-accent: #10141b; }
 }
 .gg-header-btn .gg-badge-err { background: var(--dsw-alias-state-error-primary); }
 
-/* hero / blank-session floating entry: pinned over the conversation column's
-   top-right corner while the column is in its hero phase. No explicit
-   z-index keeps it below the plugin's own floating panel and sibling overlay
-   entries (modal, notices) — mirroring the file-editor hero FAB. */
-.gg-hero-fab { position: fixed; pointer-events: auto; }
+/* hero / blank-session entry (the hero.flex slot declared by dsh-hero-flex):
+   the Git button sits in the flex row next to the re-painted expand button;
+   the flex host already lays entries out with a gap. */
+.gg-hero-flex { display: inline-flex; align-items: center; }
 
 .gg-icon { flex: none; }
 `

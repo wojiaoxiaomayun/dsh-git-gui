@@ -45,6 +45,7 @@ function makeGitApi(connection) {
     async switchBranch(cwd, name, create, signal) { return call('switchBranch', { cwd, name, create: create === true }, signal) },
     async merge(cwd, ref, signal) { return call('merge', { cwd, ref }, signal) },
     async pull(cwd, mode, signal) { return call('pull', { cwd, mode }, signal) },
+    async sync(cwd, signal) { return call('sync', { cwd }, signal) },
     async push(cwd, signal) { return call('push', { cwd }, signal) },
     async fetch(cwd, signal) { return call('fetch', { cwd }, signal) },
     async remoteList(cwd, signal) { return call('remoteList', { cwd }, signal) },

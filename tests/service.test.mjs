@@ -12,7 +12,7 @@ const EXPECTED_ENDPOINTS = [
   'check', 'status', 'diff', 'log', 'branches', 'identity', 'activity',
   'tree', 'cat',
   'stage', 'unstage', 'discard', 'commit', 'generateCommitMessage', 'switchBranch', 'merge', 'pull',
-  'push', 'fetch', 'remoteList', 'remoteAdd', 'stash', 'revert', 'reset', 'init',
+  'sync', 'push', 'fetch', 'remoteList', 'remoteAdd', 'stash', 'revert', 'reset', 'init',
 ]
 
 let ctx
@@ -262,6 +262,43 @@ test('remote: list/add + push -u fallback + pull + fetch (local bare remote)', a
   const pull = await service.pull(repo, 'ff-only')
   assert.equal(pull.ok, true)
   assert.equal(fs.existsSync(path.join(repo, 'remote.txt')), true)
+
+  // sync: local is now ahead (clone made one remote commit; local has more)
+  // → pulls nothing and pushes the local-only commits
+  fs.writeFileSync(path.join(repo, 'local-sync.txt'), 'local sync\n')
+  await sh(['add', 'local-sync.txt'], repo)
+  await sh(['commit', '-m', 'local sync commit'], repo)
+  const sync = await service.sync(repo)
+  assert.equal(sync.ok, true)
+  assert.equal(sync.pushed, true)
+  assert.equal(sync.pulled, false)
+  assert.ok(sync.ahead >= 1)
+  assert.ok(sync.output.length > 0)
+
+  // sync again: in sync → no-op
+  const sync2 = await service.sync(repo)
+  assert.equal(sync2.ok, true)
+  assert.equal(sync2.synced, true)
+  assert.equal(sync2.pulled, false)
+  assert.equal(sync2.pushed, false)
+
+  // diverge: clone pulls the synced state, pushes another commit; the local
+  // repo commits too → sync must merge (pull --no-rebase) then push
+  await sh(['pull', '--no-rebase'], clone)
+  fs.writeFileSync(path.join(clone, 'remote2.txt'), 'remote two\n')
+  await sh(['add', 'remote2.txt'], clone)
+  await sh(['commit', '-m', 'remote two'], clone)
+  await sh(['push'], clone)
+  fs.writeFileSync(path.join(repo, 'local-div.txt'), 'local div\n')
+  await sh(['add', 'local-div.txt'], repo)
+  await sh(['commit', '-m', 'local div'], repo)
+  const sync3 = await service.sync(repo)
+  assert.equal(sync3.ok, true)
+  assert.equal(sync3.pulled, true)
+  assert.equal(sync3.pushed, true)
+  // the merge commit means the local branch now contains the remote commit
+  const log = await service.log(repo, 10, null)
+  assert.ok(log.commits.some((c) => c.subject === 'remote two'))
 
   fs.rmSync(remoteDir, { recursive: true, force: true })
   fs.rmSync(cloneParent, { recursive: true, force: true })
