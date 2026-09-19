@@ -187,8 +187,8 @@ function WorkspaceBar() {
 function GitPanel(props) {
   const sessions = props.useSessions((s) => s)
   React.useEffect(() => {
-    applySession(sessions)
-  }, [sessions])
+    applySession(sessions, props.sessionId)
+  }, [sessions, props.sessionId])
   const open = useStore((s) => s.open)
   const cwd = useStore((s) => s.cwd)
   const running = useStore((s) => s.sessionRunning)

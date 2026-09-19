@@ -65,8 +65,8 @@ function GitButton() {
 function HeaderButton(props) {
   const sessions = props.useSessions((s) => s)
   React.useEffect(() => {
-    if (sessions) applySession(sessions)
-  }, [sessions])
+    if (sessions) applySession(sessions, props.sessionId)
+  }, [sessions, props.sessionId])
   return h(GitButton)
 }
 

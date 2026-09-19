@@ -73,6 +73,29 @@ dsh plugin --profile web add .\dsh-xhl-dsh-git-gui-0.1.3.tgz
 
 If you do want a `link:` dev loop, run `scripts/link-host-deps.ps1` after every `npm install` / `pnpm install`, then fully restart DSH.
 
+**The panel is stuck on "Detecting repository…" right after upgrading DSH itself?**
+
+The host half needs `@deepseek-ai/cordis`, `@deepseek-ai/dsh-llm` and `@deepseek-ai/dsh-typert-protocol`, resolved through the shared module fallback at `$DSH_HOME/profiles/node_modules`. A DSH upgrade can leave stale pnpm links in that directory (symlinks pointing into a deleted `.pnpm` store), so the plugin host half fails to import and the `git/*` endpoints never register — the browser panel then stays on "正在检测仓库…" forever.
+
+Verify from a directory that does **not** shadow the profile (e.g. `%TEMP%`):
+
+```powershell
+node --input-type=module -e "await import('file:///' + (process.env.USERPROFILE + '/.dsh/profiles/web/node_modules/@dsh-xhl/dsh-git-gui/lib/service.js').replaceAll('\\\\', '/')); console.log('host half loads')"
+```
+
+If it throws `ERR_MODULE_NOT_FOUND` for one of the `@deepseek-ai/*` packages, heal the broken fallback links (point them at the installed DSH copy, as DSH's own boot repair does):
+
+```powershell
+$shared = "$env:USERPROFILE\.dsh\profiles\node_modules\@deepseek-ai"
+$img = "$env:USERPROFILE\AppData\Local\Volta\tools\image\packages\@deepseek-ai\dsh\node_modules\@deepseek-ai\dsh\node_modules\@deepseek-ai"
+foreach ($n in 'cordis','dsh-llm','dsh-typert-protocol') {
+  Remove-Item "$shared\$n" -Force -ErrorAction SilentlyContinue
+  cmd /c "mklink /J `"$shared\$n`" `"$img\$n`""
+}
+```
+
+Then fully restart `dsh web` (the running process caches the failed module load) and refresh the browser page. The plugin also hardens the browser half against DSH session-list API changes (`sessions.current` was removed; the active session is now derived from the session-scoped `sessionId` / the `ids` + `retainedBy.mainView` list fields), so a stale or renamed session field no longer leaves the panel stuck either.
+
 ## Where to start
 
 After installing the plugin, open the DeepSeek Harness Web UI and click the Git button (with a changed-files count badge) in the top-right corner of the conversation header to open the floating panel. On the hero / new-chat page (before a conversation exists) the same button is shown pinned to the same top-right spot.

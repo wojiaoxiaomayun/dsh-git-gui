@@ -93,13 +93,17 @@ test('header entry renders (SSR smoke) with a badge when files changed', () => {
   assert.equal(typeof headerComponent, 'function')
 
   // session hook that yields a session whose workspace has 2 changed files
+  // (DSH 0.1.6-alpha.2 list snapshot: no `current` field — the plugin must
+  // derive the active session from `sessionId` / `ids` / `retainedBy.mainView`)
   const sessions = {
-    current: 'sess-1',
+    ids: ['sess-1'],
     byId: {
       'sess-1': {
         id: 'sess-1', cwd: 'C:\\repo', running: false, blank: false, displayTitle: 't', updatedAt: 0,
+        retainedBy: { mainView: 1 },
       },
     },
+    phase: 'ready',
   }
   const props = {
     sessionId: 'sess-1',
@@ -137,4 +141,34 @@ test('hero twin mounts GitButton as a component (h(GitButton)), not a direct cal
   assert.match(bundle, /gg-hero-fab'[\s\S]*?h\(GitButton\)/)
   // And never a bare GitButton() call inside the hero return
   assert.doesNotMatch(bundle, /gg-hero-fab'[\s\S]*?GitButton\(\)/)
+})
+
+test('applySession derives the workspace from the DSH list snapshot (no `current` field)', () => {
+  const exports = capturedFactory.factory((spec) => require(spec))
+  // source-level require of the bundled control module via the micro-bundler's
+  // internal registry: './control.js' is the bundled id
+  const control = exports.__test.control
+  assert.ok(control, 'control module exposed for tests')
+
+  // fresh store, no seeded workspace
+  exports.__test.setState({ cwd: null, sessionId: null, check: null })
+
+  // DSH 0.1.6-alpha.2 snapshot: `current` is gone; the active session is the
+  // first `ids` row retained by the main view.
+  control.applySession({
+    ids: ['sess-2'],
+    byId: {
+      'sess-2': {
+        id: 'sess-2', cwd: 'C:\\repo', running: false, blank: false,
+        displayTitle: 't', updatedAt: 0, retainedBy: { mainView: 1 },
+      },
+    },
+    phase: 'ready',
+  })
+
+  const state = exports.__test.getState()
+  assert.equal(state.cwd, 'C:\\repo')
+  assert.equal(state.sessionId, 'sess-2')
+  // check stays null until the async refreshCheck settles; only the cwd
+  // binding matters for the "stuck at detecting" regression
 })

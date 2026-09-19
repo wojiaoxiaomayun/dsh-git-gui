@@ -42,10 +42,19 @@ function getApi() {
  * Apply a sessions snapshot (already selected via the useSessions hook in a
  * component) to the store: session id, workspace cwd, and running flag.
  * Called from effects only (never during render).
+ *
+ * The DSH sessions list snapshot exposes `{ids, byId, phase, …}` (no
+ * `current` field on recent runtimes), so the active session is derived the
+ * same way the shell does: the session-scoped `sessionId` hint when given,
+ * else the first row retained by the main view, else the first row.
  */
-function applySession(sessions) {
-  const currentId = sessions.current
-  const summary = currentId !== undefined ? sessions.byId[currentId] : undefined
+function applySession(sessions, sessionIdHint) {
+  const byId = sessions?.byId ?? {}
+  const currentId = typeof sessionIdHint === 'string' && sessionIdHint !== ''
+    ? sessionIdHint
+    : (sessions?.ids ?? []).find((id) => (byId[id]?.retainedBy?.mainView ?? 0) > 0)
+      ?? (sessions?.ids ?? [])[0]
+  const summary = currentId !== undefined ? byId[currentId] : undefined
   const cwd = typeof summary?.cwd === 'string' && summary.cwd !== '' ? summary.cwd : null
   const running = summary?.running === true
   const s = getState()

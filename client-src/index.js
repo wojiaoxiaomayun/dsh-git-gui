@@ -61,4 +61,8 @@ function apply(ctx) {
 
 module.exports = { apply, inject }
 // test-only store access (used by tests/client.test.mjs smoke tests)
-module.exports.__test = { setState: require('./store').setState, getState: require('./store').getState }
+module.exports.__test = {
+  setState: require('./store').setState,
+  getState: require('./store').getState,
+  get control() { return require('./control') },
+}
